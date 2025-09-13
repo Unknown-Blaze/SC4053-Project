@@ -1,0 +1,9 @@
+setup.py
+routers/__init__.py
+routers/transaction.py
+routers/wallet.py
+xrpl_js.egg-info/PKG-INFO
+xrpl_js.egg-info/SOURCES.txt
+xrpl_js.egg-info/dependency_links.txt
+xrpl_js.egg-info/requires.txt
+xrpl_js.egg-info/top_level.txt

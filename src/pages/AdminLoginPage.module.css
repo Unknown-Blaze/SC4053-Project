@@ -1,0 +1,209 @@
+/* src/pages/AdminLoginPage.module.css */
+.pageContainer {
+  position: relative; /* For the ::before pseudo-element */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* Full viewport height */
+  padding: 20px;
+  box-sizing: border-box;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+  /* z-index: 1; No need for z-index here if ::before is properly set */
+}
+
+.pageContainer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #c1dfff; /* white overlay */
+  z-index: 0; /* Behind the content */
+}
+
+/* All direct children of pageContainer need z-index to be above the overlay */
+.pageContainer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.formBox { /* Renamed from loginBox for general use */
+  background-color: #ffffff;
+  padding: 35px 30px; /* Increased padding slightly */
+  border-radius: 10px; /* More rounded */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); /* Softer shadow */
+  text-align: center;
+  width: 100%;
+  max-width: 450px; /* Max width for the form box, adjust as needed */
+}
+
+.logoContainer { /* Example, if you add a logo */
+  margin-bottom: 20px;
+  color: #0D253F; /* Dark Blue to match button */
+  font-size: 2.8em;
+}
+
+.title {
+  font-family: 'Montserrat';
+  font-size: 1.8em; /* Slightly larger title */
+  color: #0D253F; /* Dark Blue */
+  margin-bottom: 25px; /* More space below title */
+  font-weight: 200;
+}
+
+.formGroup {
+  margin-bottom: 20px; /* Consistent margin */
+  text-align: left;
+}
+
+.label {
+  display: block;
+  font-size: 0.9em;
+  color: #34495E; /* Dark Slate Gray for labels */
+  margin-bottom: 8px; /* More space below label */
+  font-weight: 500;
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #CED4DA; /* Standard light gray border */
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 1em;
+  color: #212529; /* Darker text for input */
+  background-color: #f8f9fa; /* Very light input background */
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: #0D253F; /* Dark blue focus border */
+  box-shadow: 0 0 0 0.2rem rgba(13, 37, 63, 0.25); /* Dark blue focus shadow */
+}
+
+.textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.button {
+  width: 100%;
+  padding: 12px 15px; /* Adjusted padding */
+  background-color: #0D253F; /* Primary Dark Blue from theme */
+  color: white;
+  border: none; /* Remove border if not needed */
+  border-radius: 6px;
+  font-size: 1.05em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  font-family: 'Montserrat', sans-serif;
+  margin-top: 10px;
+}
+
+.button:hover:not(:disabled) {
+  background-color: #0A2031; /* Slightly darker blue */
+  text-decoration: none;
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  background-color: #B0BEC5; /* Muted gray-blue for disabled */
+  cursor: not-allowed;
+}
+
+.error {
+  color: #D32F2F; /* Consistent Error Red */
+  background-color: #FFEBEE;
+  border: 1px solid #FFCDD2;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px; /* More space below error */
+  font-size: 0.9em;
+  text-align: left; /* Errors usually better left-aligned */
+}
+
+.linkText {
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #34495E; /* Dark Slate Gray */
+}
+
+.linkText a {
+  color: #0D253F; /* Dark Blue for links */
+  text-decoration: none;
+  font-weight: 500;
+}
+.linkText a:hover {
+  text-decoration: underline;
+  color: #01B4E4; /* Accent blue on hover for links */
+}
+
+.backLink {
+  display: block; /* Make it block for full width if desired, or inline-block */
+  margin-top: 25px;
+  font-size: 0.9em;
+  color: #0D253F; /* Dark Blue */
+}
+.backLink:hover {
+  color: #01B4E4; /* Accent Blue on hover */
+  text-decoration: underline;
+}
+
+/* Styles for User Type Toggle - Adapted to the new theme */
+.userTypeToggle {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 30px; /* More space below toggle */
+  border: 1px solid #0D253F; /* Dark Blue border */
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.toggleButton {
+  flex: 1;
+  padding: 10px 15px;
+  background-color: #FFFFFF;
+  color: #0D253F; /* Dark Blue text */
+  border: none;
+  cursor: pointer;
+  font-size: 0.95em;
+  font-weight: 500;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.toggleButton:not(:last-child) {
+  border-right: 1px solid #0D253F; /* Dark Blue separator */
+}
+
+.toggleButton.active {
+  background-color: #0D253F; /* Dark Blue background for active */
+  color: #FFFFFF; /* White text for active */
+}
+
+.toggleButton:hover:not(.active) {
+  background-color: rgba(13, 37, 63, 0.05); /* Very light Dark Blue hover */
+}
+
+/* In AdminLoginPage.module.css or your global styles */
+.spinner {
+  animation: spin 1s linear infinite;
+  display: inline-block; /* Or flex if needed for alignment */
+  vertical-align: middle; /* Helps align with text */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,222 @@
+/* src/components/Admin/AdminOrderListView.module.css */
+.title {
+  color: #343a40;
+  margin-bottom: 20px;
+  font-size: 1.6em; /* Make title prominent */
+  font-weight: 600;
+}
+
+.container {
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 12px 15px; /* Adjusted padding */
+  margin-bottom: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s ease; /* Removed transform for less jumpiness */
+}
+.container:hover {
+  box-shadow: 0 3px 7px rgba(0,0,0,0.08);
+}
+
+.header {
+  font-size: 1.05em; /* Slightly larger */
+  font-weight: bold;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #343a40;
+  cursor: pointer; /* Indicate header is clickable to edit */
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 8px;
+}
+
+.customerName { /* For better targeting */
+    /* Add specific styles if needed */
+}
+
+.appOrderId {
+  font-size: 0.85em;
+  color: #6c757d;
+  margin-left: 5px;
+}
+
+.headerBadges { /* Container for status badges */
+    display: flex;
+    gap: 8px;
+}
+
+.summaryLine {
+  font-size: 0.9em;
+  color: #495057;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+.summaryLine span:first-child { /* Label part of summary */
+    font-weight: 500;
+    color: #555;
+}
+
+.statusBadge {
+  padding: 3px 10px; /* More padding */
+  border-radius: 15px; /* More pill-like */
+  font-size: 0.75em;
+  font-weight: 600; /* Bolder text */
+  text-transform: uppercase; /* Uppercase for emphasis */
+  letter-spacing: 0.5px;
+}
+
+.itemsToggle {
+  font-size: 0.85em; /* Slightly larger */
+  color: #007bff;
+  cursor: pointer;
+  text-decoration: none; /* Remove underline, add on hover */
+  margin-top: 8px;
+  margin-bottom: 5px; /* Space before items list */
+  display: inline-flex; /* For icon alignment */
+  align-items: center;
+  gap: 4px;
+}
+.itemsToggle:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+.itemsListContainer {
+  max-height: 120px; /* Reduced max height */
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.itemsList {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.itemsListItem {
+  font-size: 0.85em;
+  padding: 4px 0;
+  border-bottom: 1px dotted #e0e0e0;
+}
+.itemsListItem:last-child {
+  border-bottom: none;
+}
+
+.actions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.actionGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.actionGroup label {
+    font-size: 0.85em;
+    color: #555;
+    margin-bottom: 0; /* Remove default margin */
+}
+
+.select {
+  /* Uses global select styles, override if needed */
+  padding: 7px 10px;
+  font-size: 0.9em;
+  min-width: 140px; /* Ensure it's not too small */
+}
+
+.button {
+  /* Uses global button styles, specific colors below */
+  padding: 7px 12px;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.markPaidButton {
+    background-color: #28a745; /* Green */
+}
+.markPaidButton:hover { background-color: #218838; text-decoration: none; }
+
+.revertPaymentButton {
+    background-color: #ffc107; /* Yellow */
+    color: #212529 !important; /* Dark text on yellow */
+}
+.revertPaymentButton:hover { background-color: #e0a800; text-decoration: none; }
+
+.editButton {
+    background-color: #6c757d; /* Grey */
+    margin-left: auto; /* Push to right */
+}
+.editButton:hover { background-color: #5a6268; text-decoration: none; }
+
+/* AdminOrderListView.module.css */
+/* ... other styles ... */
+
+.summaryLine.discountInfo span:first-child {
+  color: #28a745; /* Green color for discount text */
+}
+
+.itemsListItem .itemDiscountTag {
+  font-size: 0.8em;
+  color: #fff;
+  background-color: #28a745; /* Green badge for promo */
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-left: 8px;
+}
+
+.subtotalDetail {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 3px;
+  margin-bottom: 0;
+  padding-left: 15px; /* Indent under item list */
+}
+.actionLabel {
+  margin-right: 5px;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+/* Mobile specific adjustments for order list items */
+@media (max-width: 600px) {
+  .header {
+    font-size: 0.95em; /* Smaller header text on mobile */
+  }
+  .header .appOrderId {
+    display: block; /* Stack order ID below name if too long */
+    font-size: 0.75em;
+    margin-left: 0;
+  }
+  .summaryLine {
+    font-size: 0.8em;
+  }
+  .actions {
+    flex-direction: column;
+    align-items: stretch; /* Make action groups full width */
+  }
+  .actionGroup {
+    width: 100%;
+    justify-content: space-between; /* Space out label and select/button */
+  }
+  .actionGroup .select, .actions .button { /* Ensure buttons in actions are also full width */
+    width: 100%;
+  }
+  .editButton {
+    margin-left: 0; /* Don't push to right if stacked */
+  }
+}

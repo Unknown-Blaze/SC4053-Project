@@ -1,0 +1,319 @@
+/* UserProfile.module.css */
+
+.userProfileContainer {
+    max-width: 100%;      /* Remove max-width limit */
+    margin: 2rem 0;       /* Keep vertical margin only */
+    padding: 2rem 3rem;   /* Optional: increase horizontal padding */
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2c3e50;
+    background: #fefefe;
+  }
+  
+  .contentWrapper {
+    display: flex;
+    gap: 3rem;
+    align-items: flex-start;
+    width: 100%;          /* Take full width */
+    max-width: 100%;      /* Ensure no max width constraint */
+  }
+  
+  
+  /* Left column: Profile */
+  .profileSection {
+    flex: 1 1 45%;
+    background: #ffffff;
+    padding: 1.8rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+  }
+  
+  /* Right column: Projects */
+  .projectsSection {
+    flex: 1 1 80%;
+    background: #ffffff;
+    padding: 1.8rem 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+    max-height: 520px;
+    overflow-y: auto;
+    /* custom scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #4a90e2 #e1eaff;
+  }
+  
+  .projectsSection::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .projectsSection::-webkit-scrollbar-track {
+    background: #e1eaff;
+    border-radius: 10px;
+  }
+  
+  .projectsSection::-webkit-scrollbar-thumb {
+    background-color: #4a90e2;
+    border-radius: 10px;
+    border: 2px solid #e1eaff;
+  }
+  
+  .titleContainer {
+    margin-bottom: 1.2rem;
+    border-bottom: 3px solid #4a90e2;
+    padding-bottom: 0.35rem;
+  }
+  
+  .profileTitle,
+  .projectsTitle {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #2c3e50;
+  }
+  
+  .profileInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .infoItem {
+    display: flex;
+    gap: 0.7rem;
+    align-items: center;
+    font-size: 1.05rem;
+    color: #34495e;
+  }
+  
+  .infoLabel {
+    min-width: 130px;
+    font-weight: 600;
+    color: #34495e;
+  }
+  
+  .infoValue {
+    font-size: 1rem;
+    color: #2c3e50;
+    word-break: break-word;
+  }
+  
+  .addressToggleButton {
+    margin-left: 1rem;
+    background: none;
+    border: none;
+    color: #4a90e2;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.25s ease;
+    padding: 0;
+  }
+  
+  .addressToggleButton:hover {
+    color: #357abd;
+    text-decoration: underline;
+  }
+  
+  .editButton,
+  .saveButton,
+  .cancelButton {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    padding: 0.5rem 1.4rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    box-shadow: 0 3px 6px rgba(74, 144, 226, 0.3);
+  }
+  
+  .editButton {
+    background-color: #4a90e2;
+    color: white;
+    align-self: flex-start;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+  }
+  
+  .editButton:hover {
+    background-color: #357abd;
+    box-shadow: 0 6px 18px rgba(53, 122, 189, 0.5);
+  }
+  
+  .saveButton {
+    background-color: #28a745;
+    color: white;
+    margin-right: 1rem;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+  }
+  
+  .saveButton:hover {
+    background-color: #218838;
+    box-shadow: 0 6px 18px rgba(33, 136, 56, 0.5);
+  }
+  
+  .cancelButton {
+    background-color: #dc3545;
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+  }
+  
+  .cancelButton:hover {
+    background-color: #c82333;
+    box-shadow: 0 6px 18px rgba(200, 35, 51, 0.5);
+  }
+  
+  .editForm {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .formGroup label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 1rem;
+  }
+  
+  .formGroup input[type="text"] {
+    padding: 0.55rem 0.85rem;
+    border: 1.8px solid #b0c4de;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    transition: border-color 0.3s ease;
+    color: #2c3e50;
+    background: #f8faff;
+  }
+  
+  .formGroup input[type="text"]:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+    background: #fff;
+  }
+  
+  .formActions {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1.3rem;
+  }
+  
+  .projectsList {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.3rem;
+  }
+  
+  .projectItem {
+    padding: 1.5rem 2rem;
+    border: 1px solid #d1d9e6;        /* lighter border */
+    border-radius: 12px;               /* a bit rounder */
+    background-color: #ffffff;         /* pure white card */
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.15); /* subtle elevated shadow */
+    font-size: 1rem;
+    color: #34495e;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    cursor: default;
+    width: fit-content;       /* shrink width to content */
+    max-width: 200px;         /* maximum width */
+    margin: 0 auto;           /* center horizontally */
+    display: block;           /* ensure margin auto works */
+  }
+  
+  .projectItem:hover {
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3);  /* stronger shadow on hover */
+    transform: translateY(-4px);                      /* slight lift */
+  }
+  
+  .projectItem div {
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+  }
+  
+  
+  /* Responsive */
+  
+  @media (max-width: px) {
+    .contentWrapper {
+        flex-direction: column;
+        gap: 2rem;
+    }
+    .profileSection,
+    .projectsSection {
+        flex: none;
+        max-height: none;
+        padding: 1.6rem 1.8rem;
+    }
+  }
+  
+  /* Background colors */
+  body,
+  .userProfileContainer {
+    background-color: #f8f9fa;
+    color: #2c3e50;
+  }
+  
+  .card,
+  .profileSection,
+  .projectsSection {
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+  }
+  
+  .header,
+  .sidebar {
+    background-color: #343a40;
+    color: #ffffff;
+  }
+  
+  /* Text colors */
+  h1,
+  h2,
+  h3,
+  .profileTitle,
+  .projectsTitle {
+    color: #2c3e50;
+  }
+  
+  .navLink {
+    color: #495057;
+  }
+  
+  .navLink:hover {
+    color: #007bff;
+    background-color: #e9ecef;
+  }
+  
+  .activeNavLink {
+    background-color: #FF9800 !important;
+    color: #ffffff !important;
+  }
+  
+  /* Buttons */
+  .editButton {
+    background-color: #4a90e2; /* Keep or update as needed */
+    color: white;
+  }
+  
+  .logoutButton {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .logoutButton:hover {
+    background-color: #c82333;
+  }
+  
+  /* Scrollbar */
+  .sidebar::-webkit-scrollbar-thumb {
+    background-color: #FF9800;
+  }

@@ -1,0 +1,177 @@
+/* src/components/Admin/AdminPromoCodeManager.module.css */
+.container {
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+}
+
+.title {
+  font-size: 1.6em;
+  color: #343a40;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 10px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between logical groups/rows */
+  margin-bottom: 30px;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns for side-by-side inputs */
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+.formGroup label {
+  margin-bottom: 6px;
+  font-size: 0.9em;
+  color: #495057;
+  font-weight: 500;
+}
+.formGroup input[type="text"],
+.formGroup input[type="number"],
+.formGroup input[type="date"],
+.formGroup select {
+  /* Uses global styles, can be overridden */
+  font-size: 0.95em;
+}
+.formGroup small {
+    font-size: 0.8em;
+    color: #6c757d;
+    margin-top: 3px;
+}
+
+.formChecks {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+.formChecks label {
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #495057;
+}
+.formChecks input[type="checkbox"] {
+    width: auto; /* Override global input width */
+    transform: scale(1.1);
+}
+
+.formActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.button, .saveButton, .cancelButton, .editButton, .deleteButton, .activateButton, .deactivateButton {
+  /* Base button styles from index.css will apply */
+  font-size: 0.95em;
+  padding: 8px 15px;
+}
+.saveButton { background-color: #28a745; color: white; }
+.saveButton:hover { background-color: #218838; }
+.cancelButton { background-color: #6c757d; color: white; }
+.cancelButton:hover { background-color: #545b62; }
+
+.listTitle {
+  font-size: 1.4em;
+  color: #343a40;
+  margin-top: 30px;
+  margin-bottom: 15px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 20px;
+}
+
+.promoList {
+  display: grid;
+  gap: 15px;
+}
+
+.promoItem {
+  border: 1px solid #e0e0e0;
+  padding: 15px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start; /* Align items at the start, actions at the end */
+  flex-wrap: wrap; /* Allow wrapping for actions on small screens */
+}
+.promoItem > div:first-child { /* Details section */
+    flex-grow: 1;
+    margin-right: 15px; /* Space before actions */
+}
+
+.promoCodeText {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #007bff;
+  margin-right: 8px;
+}
+.activeStatus { color: #28a745; font-weight: 500; font-size: 0.85em; }
+.inactiveStatus { color: #dc3545; font-weight: 500; font-size: 0.85em; }
+
+.promoDescription {
+  margin: 5px 0;
+  font-size: 0.95em;
+  color: #333;
+}
+.promoItem small {
+  display: block;
+  font-size: 0.85em;
+  color: #555;
+  line-height: 1.4;
+}
+
+.promoItemActions {
+  display: flex;
+  flex-direction: column; /* Stack actions vertically */
+  gap: 8px;
+  align-items: flex-start; /* Align buttons to the left */
+  flex-shrink: 0; /* Prevent actions from shrinking too much */
+}
+.promoItemActions button {
+    width: 100%; /* Make buttons full width in their column */
+}
+
+.editButton { background-color: #ffc107; color: #212529;}
+.editButton:hover { background-color: #e0a800; }
+.deleteButton { background-color: #dc3545; color: white;}
+.deleteButton:hover { background-color: #c82333; }
+.activateButton { background-color: #28a745; color: white;}
+.activateButton:hover { background-color: #218838; }
+.deactivateButton { background-color: #ffc107; color: #212529;}
+.deactivateButton:hover { background-color: #e0a800; }
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .formRow {
+    grid-template-columns: 1fr; /* Stack form inputs on smaller screens */
+  }
+  .promoItem {
+    flex-direction: column; /* Stack promo details and actions */
+  }
+  .promoItemActions {
+    width: 100%;
+    margin-top: 10px;
+    flex-direction: row; /* Maybe row is better on mobile for actions if space allows */
+    flex-wrap: wrap; /* Allow buttons to wrap if needed */
+  }
+   .promoItemActions button {
+    width: auto; /* Or set a flex-basis for better distribution */
+    flex-grow: 1; /* Allow buttons to grow and fill space */
+  }
+}

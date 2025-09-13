@@ -1,0 +1,296 @@
+/* src/pages/ProjectDisplayPage.module.css */
+.pageContainer {
+  padding: 20px;
+  background-color: #F0F4F8; /* Light Blue-Gray background */
+  min-height: calc(100vh - 70px); /* Assuming 70px navbar */
+  font-family: 'Open Sans', sans-serif;
+}
+
+.projectHeader {
+  background-color: #FFFFFF;
+  padding: 30px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(13, 37, 63, 0.06);
+  text-align: center;
+}
+
+.projectHeader h1 {
+  font-family: 'Montserrat', sans-serif;
+  color: #0D253F; /* Dark Blue */
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.ngoName {
+  color: #01B4E4; /* Accent Blue */
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+.projectDescription {
+  color: #34495E; /* Dark Slate Gray */
+  font-size: 1em;
+  line-height: 1.6;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mainContentGrid {
+  display: grid;
+  grid-template-columns: 1fr; /* Single column by default */
+  gap: 30px;
+}
+
+/* On larger screens, two columns */
+@media (min-width: 992px) {
+  .mainContentGrid {
+    grid-template-columns: minmax(320px, 1.2fr) 2fr; /* Adjust ratio as needed */
+  }
+}
+
+.transactionsPanel,
+.milestonesPanel {
+  padding: 20px;
+  border-radius: 8px;
+}
+
+/* Transactions Panel Styling (Dark Theme like reference) */
+.transactionsPanel {
+  background-color: #0D253F; /* Dark Blue */
+  color: #E0E0E0; /* Light text */
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.panelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.panelHeader h2 {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.3em;
+  font-weight: 600;
+  color: #FFFFFF; /* White title on dark panel */
+  margin: 0;
+}
+
+.viewAllLink {
+  color: #01B4E4; /* Accent Blue */
+  text-decoration: none;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.viewAllLink:hover {
+  text-decoration: underline;
+}
+
+.transactionList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.transactionItem {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.transactionItem:last-child {
+  border-bottom: none;
+}
+
+.txAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+  background-color: rgba(255,255,255,0.1); /* Placeholder bg */
+}
+
+.txInfo {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.txName {
+  font-weight: 500;
+  color: #FFFFFF;
+  font-size: 0.95em;
+  margin-bottom: 2px;
+}
+
+.txEmail { /* Using this for sub-text */
+  font-size: 0.8em;
+  color: #A0B0C0; /* Lighter gray */
+}
+
+.txAmount {
+  font-weight: 600;
+  font-size: 1em;
+  color: #FFFFFF;
+  margin-left: 10px; /* Space from info */
+  white-space: nowrap;
+}
+
+.txLoadingSpinner {
+    margin-left: 10px;
+    animation: spin 1s linear infinite;
+    font-size: 1.2em;
+    color: #01B4E4;
+}
+
+.txErrorMessage, .noTransactions {
+    padding: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #A0B0C0;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 4px;
+}
+.txErrorMessage {
+    color: #ffcdd2; /* Light red for error text */
+    background-color: rgba(211, 47, 47, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* ProjectDisplayPage.module.css */
+/* ... existing styles ... */
+
+.advanceButton {
+  background-color: #f0ad4e; /* Orange warning color */
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.2s;
+  margin-left: auto; /* Pushes it to the right in flex container */
+}
+
+.advanceButton:hover {
+  background-color: #ec971f;
+}
+
+.advanceButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.advanceButton .spinner {
+  margin-right: 5px;
+  animation: spin 1s linear infinite; /* Re-use spinner animation */
+  font-size: 1em; /* Adjust icon size within button */
+}
+
+.panelHeader { /* Ensure panelHeader is a flex container if not already */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem; /* Or your existing margin */
+}
+
+.errorMessage { /* General error message styling */
+  color: #d9534f; /* Red for errors */
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+}
+.errorMessage svg {
+  margin-right: 8px;
+}
+
+
+/* Milestones Panel Styling */
+.milestonesPanel {
+  background-color: #FFFFFF; /* White background */
+  box-shadow: 0 4px 12px rgba(13, 37, 63, 0.06);
+}
+.milestonesPanel .panelHeader h2 {
+  color: #0D253F; /* Dark Blue for title on light panel */
+}
+.milestonesPanel .panelHeader {
+  border-bottom: 1px solid #E0E0E0; /* Lighter border for light panel */
+}
+
+.milestoneList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.milestoneItem {
+  display: flex;
+  align-items: flex-start; /* Align icon with top of text */
+  padding: 18px 0;
+  border-bottom: 1px solid #EEF2F7;
+}
+.milestoneItem:last-child {
+  border-bottom: none;
+}
+
+.milestoneIcon {
+  font-size: 1.8em;
+  margin-right: 18px;
+  margin-top: 2px; /* Align with text slightly better */
+}
+.milestoneIcon.completed { color: #4CAF50; /* Green */ }
+.milestoneIcon.inProgress { color: #FFC107; /* Amber/Yellow */ }
+.milestoneIcon.pending { color: #78909C; /* Blue Grey */ }
+
+.milestoneInfo {
+  flex-grow: 1;
+}
+
+.milestoneTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #0D253F;
+  margin: 0 0 5px 0;
+}
+
+.milestoneStatusText {
+  font-size: 0.85em;
+  color: #546E7A;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+.milestoneItem.completed .milestoneStatusText { color: #4CAF50; }
+.milestoneItem.inprogress .milestoneStatusText { color: #FFC107; }
+.milestoneItem.pending .milestoneStatusText { color: #78909C; }
+
+
+.milestoneDetails {
+  font-size: 0.9em;
+  color: #34495E;
+  line-height: 1.5;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.donate {
+  display: flex;
+  justify-content: flex-end; /* pushes content to the right */
+}
