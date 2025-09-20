@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import classes from './AdminLoginPage.module.css'; // Or your actual SignupPage.module.css
+import classes from '../styles/AdminLoginPage.module.css'; // Or your actual SignupPage.module.css
 import { FiLoader, FiAlertCircle, FiCheckCircle, FiDownloadCloud } from 'react-icons/fi'; // Added FiDownloadCloud
 import { getAddress, isInstalled, openExtension } from '@gemwallet/api';
 

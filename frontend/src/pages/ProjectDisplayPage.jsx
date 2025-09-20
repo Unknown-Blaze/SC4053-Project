@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { FiDollarSign, FiCheckCircle, FiClock, FiLoader, FiArrowRightCircle, FiAlertCircle } from 'react-icons/fi';
-import classes from './ProjectDisplayPage.module.css';
+import classes from '../styles/ProjectDisplayPage.module.css';
 // sendPayment from @gemwallet/api is used on the ProjectDonationPage, not directly here.
 // import { sendPayment } from '@gemwallet/api';
 import { doc, getDoc } from "firebase/firestore";

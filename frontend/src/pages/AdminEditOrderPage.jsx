@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import { getAppSettings } from '../services/settingsService';
-import classes from './AdminEditOrderPage.module.css';
+import classes from '../styles/AdminEditOrderPage.module.css';
 import { FaTrashAlt, FaPlusCircle, FaTags } from 'react-icons/fa'; // Added FaTags
 
 // --- SIMPLIFIED STATUSES ---

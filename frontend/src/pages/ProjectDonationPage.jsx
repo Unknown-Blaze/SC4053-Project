@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { FiDollarSign, FiArrowLeft, FiCheckCircle, FiLoader, FiAlertCircle } from 'react-icons/fi';
-import classes from './ProjectDonationPage.module.css';
+import classes from '../styles/ProjectDonationPage.module.css';
 import { sendPayment } from '@gemwallet/api';
 
 // This would typically be in a shared file, but is duplicated here for simplicity.
