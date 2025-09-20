@@ -5,7 +5,7 @@ import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import styles from '../styles/ProjectsPage.module.css';
 
-const ProjectsPage = () => {
+const ProjectsGallery = () => {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [selectedOrg, setSelectedOrg] = useState("All"); // ✅ Track selected organisation
@@ -85,4 +85,4 @@ const ProjectsPage = () => {
   );
 };
 
-export default ProjectsPage;
+export default ProjectsGallery;

@@ -11,7 +11,7 @@ import UserLoginPage from './pages/UserLoginPage';
 import SignupPage from './pages/SignUpPage';
 import { usePageTracking } from './utils/analytics';
 import MintNFTPage from './pages/MintNFT';
-import ProjectsPage from './pages/ProjectsPage';
+import ProjectsGallery from './pages/ProjectsPage';
 import CharityProjectForm from "./pages/CreateProject";
 import ProjectDisplayPage from './pages/ProjectDisplayPage';
 import UserProfile from './pages/UserProfile'; // This is the component for /userprofile
@@ -149,7 +149,7 @@ function AppLayout() {
               >
                 {profileName}
               </NavLink>
-              <NavLink
+              {/* <NavLink
                 to="/nftPage" // Assuming this is a public gallery page
                 style={({ isActive }) =>
                   isActive
@@ -158,7 +158,7 @@ function AppLayout() {
                 }
               >
                 NFT Gallery
-              </NavLink>
+              </NavLink> */}
               <NavLink
                 to="/projectsPage" // Assuming this is a public gallery page
                 style={({ isActive }) =>
@@ -234,7 +234,7 @@ function AppLayout() {
         {/* Public Routes */}
         <Route path="/landing" element={<HomePage />} />
         <Route path="/nftPage" element={<MintNFTPage />} /> {/* Assuming public */}
-        <Route path="/projectsPage" element={<ProjectsPage/>}/>
+        <Route path="/projectsPage" element={<ProjectsGallery/>}/>
         <Route path="/projects/:projectId" element={<ProjectDisplayPage />} /> {/* Publicly viewable project details */}
 
         {/* Routes only for Unauthenticated Users (e.g., login, signup) */}
