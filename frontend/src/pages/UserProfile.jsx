@@ -113,15 +113,11 @@ const UserProfile = () => {
                                     <strong className={styles.infoLabel}>Wallet Address:</strong>
                                     <span className={styles.infoValue}>
                                         {/* MODIFIED HERE: xrplAddress -> gemWalletAddress */}
-                                        {expanded ? currentUserProfile?.gemWalletAddress : getShortAddress(currentUserProfile?.gemWalletAddress)}
-                                        {currentUserProfile?.gemWalletAddress && currentUserProfile?.gemWalletAddress.length > 12 && (
-                                            <button
-                                                onClick={() => setExpanded(!expanded)}
-                                                className={styles.addressToggleButton}
-                                            >
-                                                {expanded ? 'Hide' : 'Show full'}
-                                            </button>
-                                        )}
+                                        {
+                                            currentUserProfile?.gemWalletAddress && (
+                                                <span className={styles.infoValue}>{currentUserProfile?.gemWalletAddress}</span>
+                                            )
+                                        }
                                         {/* Display message if address is not set */}
                                         {!currentUserProfile?.gemWalletAddress && (
                                             <span style={{ fontStyle: 'italic', color: '#7f8c8d' }}> (Not connected)</span>
