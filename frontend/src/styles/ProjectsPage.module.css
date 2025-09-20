@@ -1,0 +1,155 @@
+.projectsSection {
+  flex: 1 1 80%;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 20px rgba(74, 144, 226, 0.12);
+  max-height: 540px;
+  overflow-y: auto;
+
+  /* custom scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: #4a90e2 #f0f4ff;
+
+  position: relative;
+}
+
+/* Webkit scrollbars */
+.projectsSection::-webkit-scrollbar {
+  width: 8px;
+}
+
+.projectsSection::-webkit-scrollbar-track {
+  background: #f0f4ff;
+  border-radius: 10px;
+}
+
+.projectsSection::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #007C8A, #007C8A);
+  border-radius: 10px;
+  border: 2px solid #f0f4ff;
+}
+
+/* Title container */
+.titleContainer {
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid #007C8A;
+  padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.profileTitle,
+.projectsTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a2a3a;
+  letter-spacing: 0.5px;
+}
+
+/* Grid for cards */
+.projectsList {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.2rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Remove list item background since the card itself has styling */
+.projectItem {
+  margin: 0;
+  padding: 0;
+}
+
+/* Card style */
+.projectCard {
+  display: block;
+  background: #f9fbff;
+  padding: 1rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: #2c3e50;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e1eaff;
+  height: 100%;
+}
+
+.projectCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.15);
+  border-color: #007C8A;
+}
+
+/* Card header */
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+/* Project name */
+.projectName {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1a2a3a;
+  margin: 0;
+}
+
+/* Organisation name (small accent text) */
+.orgName {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #007C8A;
+  background: #eaf2ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Project description */
+.projectDescription {
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #34495e;
+  margin: 0;
+}
+
+/* Filter container */
+.filterContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Filter button base style */
+.filterButton {
+  background: #f0f4ff;
+  border: 1px solid #d0dbf7;
+  color: #1a2a3a;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.filterButton:hover {
+  background: #e1eaff;
+  border-color: #007C8A;
+  color: #007C8A;
+}
+
+/* Active filter (selected state) */
+.activeFilter {
+  background: #007C8A;
+  border-color: #007C8A;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(74, 144, 226, 0.2);
+}

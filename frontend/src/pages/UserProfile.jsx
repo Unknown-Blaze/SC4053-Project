@@ -155,7 +155,7 @@ const UserProfile = () => {
                 </div>
 
                 {/* Project List */}
-                <div className={styles.projectsSection}>
+                {/* <div className={styles.projectsSection}>
                     <div className={styles.titleContainer}>
                         <h3 className={styles.projectsTitle}>All Projects</h3>
                     </div>
@@ -175,7 +175,7 @@ const UserProfile = () => {
                     ) : (
                         <p>No projects found.</p>
                     )}
-                </div>
+                </div> */}
             </div>
         </div>
     );
