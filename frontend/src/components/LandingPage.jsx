@@ -2,11 +2,12 @@
 import React from 'react';
 import {
   FiTarget, FiCheckSquare, FiLink, FiArchive, FiShield,
-  FiHeart, FiUsers, FiTrendingUp,
+  FiHeart, FiUsers, FiTrendingUp,FiLock,FiAward, FiEye,
   FiDollarSign, FiBarChart2, FiGlobe,
   FiExternalLink, FiPlayCircle, FiSearch,
   FiFacebook, FiTwitter, FiLinkedin, FiHelpCircle // Added for footer & brand
 } from 'react-icons/fi';
+
 
 // --- NEW DARK BLUE & WHITE THEME STYLES ---
 const styles = {
@@ -267,17 +268,43 @@ const LandingPage = () => {
   ];
 
   const keyFeatures = [
-    { icon: <FiTarget />, title: "Milestone-Based Escrow", description: "Donations are held in smart contracts on the XRPL and released only upon the successful completion of predefined project milestones." },
-    { icon: <FiCheckSquare />, title: "Witness Chaining Verification", description: (<>Each milestone completion is verified through a decentralized network of witness servers... Learn more at{' '} <a href="https://xrpl.org" target="_blank" rel="noopener noreferrer" style={styles.xrplLink}>xrpl.org <FiExternalLink style={styles.xrplLinkIcon} /></a>.</>) },
-    { icon: <FiLink />, title: "On-Chain Transparency", description: "All transactions, including fund releases and milestone verifications, are recorded on the XRPL..." },
-    { icon: <FiArchive />, title: "Decentralized Storage", description: "Supporting documents... are stored on decentralized platforms like IPFS..." },
-    { icon: <FiShield />, title: "Regulatory Compliance", description: "The system is designed to align with regulatory frameworks..." },
-  ];
+  { 
+    icon: <FiUsers />, 
+    title: "Donor–NGO Connection", 
+    description: "A transparent bridge between NGOs and donors, making it easy to discover causes and understand exactly how contributions will be used." 
+  },
+  { 
+    icon: <FiLock />, 
+    title: "Milestone-Based Escrow", 
+    description: "Donations are held securely in smart contracts and released only when verified milestones are completed, ensuring accountability." 
+  },
+  { 
+    icon: <FiAward />, 
+    title: "Proof of Donation & Impact", 
+    description: "Each donor receives an NFT receipt tied to their contribution, along with verifiable milestone updates that prove their impact." 
+  },
+  { 
+    icon: <FiEye />, 
+    title: "Radical Transparency", 
+    description: "All project goals, funding progress, and updates are anchored on Ethereum and IPFS, creating an immutable public record." 
+  },
+  { 
+    icon: <FiSearch />, 
+    title: "Smarter Discovery", 
+    description: "Donors can explore and filter projects by urgency, category, or location, helping them connect with the causes that matter most." 
+  },
+  { 
+    icon: <FiTrendingUp />, 
+    title: "Empowering Grassroots NGOs", 
+    description: "Levels the playing field for smaller NGOs by giving them a trusted platform to share their work and attract global support." 
+  },
+];
+
 
   const benefits = [
-    { icon: <FiHeart />, title: "Enhanced Donor Trust", description: "By providing transparent, verifiable records of fund usage, donors can be confident..." },
-    { icon: <FiUsers />, title: "Improved Accountability", description: "NGOs are incentivized to meet project milestones efficiently..." },
-    { icon: <FiTrendingUp />, title: "Scalable Solution", description: "The integration of XRPL and witness chaining offers a scalable model..." },
+    { icon: <FiHeart />, title: "Trust & Accountability", description: "Donors gain confidence knowing their contributions are securely managed, transparently tracked, and milestone-based."},
+    { icon: <FiUsers />, title: "Visibility for NGOs", description: "Grassroots organisations get a platform to showcase their work, reach more donors, and share verified progress updates."},
+    { icon: <FiTrendingUp />, title: "Simplified Giving", description: "Wallet-based donations make the process seamless, while NFT receipts add a unique, verifiable layer of recognition for donors." },
   ];
 
   statsData.map((_, index) => { // Initialize hover states for stats
@@ -302,8 +329,7 @@ const LandingPage = () => {
             <span style={{...styles.heroHeadlineBase, ...styles.heroHeadlineAccent}}>Transparently.</span>
           </h1>
           <p style={styles.heroSubheadline}>
-            Experience the future of charitable giving. nGoDONATE connects you directly to causes,
-            powered by the XRP Ledger for unparalleled transparency and accountability.
+            Experience the future of charitable giving. nGoDONATE connects you directly to causes, powered by Ethereum for secure, transparent, and accountable donations.
           </p>
           <div style={styles.heroButtonsContainer}>
             <a href="/login" style={{...styles.ctaButtonBase, ...styles.ctaButtonPrimary, ...(hoverStates.demo ? styles.ctaButtonPrimaryHover : {})}}
@@ -333,10 +359,9 @@ const LandingPage = () => {
       <section id="learn-more" style={{ ...styles.contentSection, backgroundColor: '#FFFFFF'}}>
         <h2 style={styles.sectionHeading}>Project Overview<div style={styles.sectionHeadingAfter}></div></h2>
         <p style={styles.paragraph}>
-          nGoDONATE is designed to revolutionize NGO funding by integrating the XRP Ledger (XRPL)
-          with a milestone-based escrow system, utilizing witness chaining for verification. We aim to create a
-          trustworthy ecosystem where donors can confidently contribute, knowing their funds are managed and
-          disbursed with utmost accountability and real-time visibility.
+           nGoDONATE is a blockchain-powered platform that bridges NGOs and donors through transparency, trust and accountability. Built on Ethereum, it allows 
+           NGOs to showcase their causes and progress, while donors can contribute seamlessly, track milestones and ensure funds are used responsibly - all with 
+           real-time visibility.
         </p>
       </section>
 
