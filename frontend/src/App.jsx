@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink, NavLink, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link as RouterLink, NavLink, Navigate, useNavigate } from 'react-router-dom';
 
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage'; // This will be our landing page
