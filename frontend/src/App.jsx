@@ -131,7 +131,7 @@ function AppLayout() {
   return (
     <>
       <nav style={navStyles.nav}>
-        <RouterLink to="/" style={navStyles.brandLink}>
+        <RouterLink to="/landing" style={navStyles.brandLink}>
           nGoDONATE
         </RouterLink>
 
