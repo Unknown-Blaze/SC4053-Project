@@ -1,7 +1,7 @@
 // src/pages/UserProfile.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore'; // Removed unused where, orderBy
+import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import styles from './UserProfile.module.css';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ const UserProfile = () => {
         if (currentUserProfile) {
             setFormData({
                 displayName: currentUserProfile.displayName || ''
-                // No need to set wallet address in formData as it's not directly editable here
+                // Wallet address is not editable, so it's not needed in formData
             });
         }
     }, [currentUserProfile]);
@@ -55,16 +55,8 @@ const UserProfile = () => {
             await updateDoc(userDocRef, {
                 displayName: formData.displayName,
             });
-            // The updateUserProfile in AuthContext should ideally handle updating Firebase Auth displayName
-            // and then re-fetch/update currentUserProfile which includes the new displayName.
-            // If it only updates Firebase Auth, you might need to manually update context or rely on onAuthStateChanged listener.
             if (updateUserProfile) {
-                 // Assuming updateUserProfile updates the context's currentUserProfile correctly
                 await updateUserProfile(formData.displayName);
-            } else if (currentUserProfile.displayName !== formData.displayName) {
-                // Manually update local state if updateUserProfile is not robust enough
-                // This is a fallback and ideally AuthContext handles this update propagation
-                // For simplicity, we assume AuthContext handles it.
             }
             setIsEditing(false);
         } catch (error) {
@@ -85,10 +77,9 @@ const UserProfile = () => {
         return `${addr.slice(0, 6)}......${addr.slice(-6)}`;
     };
 
-    // Add a check for loading currentUserProfile to prevent rendering with undefined data
     if (!currentUserProfile) {
         return (
-            <div className={styles.userProfileContainer} style={{textAlign: 'center', padding: '50px'}}>
+            <div className={styles.userProfileContainer} style={{ textAlign: 'center', padding: '50px' }}>
                 Loading profile...
             </div>
         );
@@ -112,9 +103,9 @@ const UserProfile = () => {
                                 <div className={styles.infoItem}>
                                     <strong className={styles.infoLabel}>Wallet Address:</strong>
                                     <span className={styles.infoValue}>
-                                        {/* MODIFIED HERE: xrplAddress -> gemWalletAddress */}
-                                        {expanded ? currentUserProfile?.gemWalletAddress : getShortAddress(currentUserProfile?.gemWalletAddress)}
-                                        {currentUserProfile?.gemWalletAddress && currentUserProfile?.gemWalletAddress.length > 12 && (
+                                        {/* CHANGED: Point to walletAddress instead of gemWalletAddress */}
+                                        {expanded ? currentUserProfile?.walletAddress : getShortAddress(currentUserProfile?.walletAddress)}
+                                        {currentUserProfile?.walletAddress && currentUserProfile?.walletAddress.length > 12 && (
                                             <button
                                                 onClick={() => setExpanded(!expanded)}
                                                 className={styles.addressToggleButton}
@@ -122,8 +113,8 @@ const UserProfile = () => {
                                                 {expanded ? 'Hide' : 'Show full'}
                                             </button>
                                         )}
-                                        {/* Display message if address is not set */}
-                                        {!currentUserProfile?.gemWalletAddress && (
+                                        {/* CHANGED: Check for walletAddress to display the "Not connected" message */}
+                                        {!currentUserProfile?.walletAddress && (
                                             <span style={{ fontStyle: 'italic', color: '#7f8c8d' }}> (Not connected)</span>
                                         )}
                                     </span>
@@ -143,7 +134,7 @@ const UserProfile = () => {
                                     name="displayName"
                                     value={formData.displayName}
                                     onChange={handleInputChange}
-                                    className={styles.inputField} // Assuming you have a class for inputs
+                                    className={styles.inputField}
                                 />
                             </div>
                             <div className={styles.formActions}>

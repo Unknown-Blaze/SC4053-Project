@@ -1,87 +1,105 @@
-from datetime import datetime
-from typing import List
+# routers/donate.py
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from xrpl.models import EscrowCancel, EscrowCreate, EscrowFinish
-from xrpl.transaction.reliable_submission import submit_and_wait
-
-from services.witness_ngo import ShamirSecretScheme
-from services.xrpl_client import client
+from typing import List
+from datetime import datetime
+import time
+from services.eth_client import w3
+import json  # <-- Import json
+import os    # <-- Import os
 
 router = APIRouter()
 
-
+# --- Pydantic Models (No Changes) ---
 class Milestone(BaseModel):
     task: str
-    amount: int
+    amount: float
     time: datetime
 
-
-class MilestoneCheckpoint(BaseModel):
-    task: str
-    amount: str
-    completion: int
-
-
-class DonationRequest(BaseModel):
-    # seed: str
-    client: str
-    recipient: str
+class PrepareDonationRequest(BaseModel):
+    donor_address: str
+    recipient_address: str
     milestones: List[Milestone]
 
+class PrepareEscrowActionRequest(BaseModel):
+    donor_address: str
+    escrow_contract_address: str
 
-RIPPLE_EPOCH_OFFSET = 946684800
+# --- FINAL, CORRECT function to load pre-compiled contract data from Hardhat ---
+def load_contract_data(file_name: str, contract_name: str):
+    """
+    Loads contract ABI and bytecode from Hardhat's artifacts.
+    :param file_name: The name of the .sol file (e.g., "Escrow")
+    :param contract_name: The name of the contract inside the file (e.g., "Escrow")
+    """
+    current_dir = os.path.dirname(os.path.realpath(__file__))
+    artifacts_path = os.path.join(
+        os.path.dirname(current_dir), "artifacts", "contracts", f"{file_name}.sol", f"{contract_name}.json"
+    )
+    
+    with open(artifacts_path, 'r') as f:
+        data = json.load(f)
+    return data['abi'], data['bytecode']
 
+# --- Load the pre-compiled contract data on startup ---
+ESCROW_ABI, ESCROW_BYTECODE = load_contract_data('Escrow', 'Escrow')
 
-@router.post("/donate")
-def donate(request: DonationRequest):
+# --- All your endpoints below this line are correct and need no changes ---
+
+@router.post("/prepare_donation")
+def prepare_donation(request: PrepareDonationRequest):
     try:
-        escrows = []
-        idx = 0
+        unsigned_transactions = []
+        current_nonce = w3.eth.get_transaction_count(w3.to_checksum_address(request.donor_address))
 
         for milestone in request.milestones:
-            unix_ts = int(milestone.time.timestamp())
-            ripple_ts = unix_ts - RIPPLE_EPOCH_OFFSET
-            if ripple_ts <= 0:
+            unlock_timestamp = int(milestone.time.timestamp())
+            if unlock_timestamp <= time.time():
                 raise ValueError("Milestone time must be in the future.")
-            create_tx = EscrowCreate(
-                account=request.client.address,
-                destination=request.recipient.address,
-                amount=str(milestone.amount),
-                finish_after=ripple_ts,
-            )
 
-            create_escrow_response = submit_and_wait(create_tx, client, request.client)
+            Escrow = w3.eth.contract(abi=ESCROW_ABI, bytecode=ESCROW_BYTECODE)
+            tx = Escrow.constructor(
+                w3.to_checksum_address(request.recipient_address),
+                unlock_timestamp
+            ).build_transaction({
+                'from': w3.to_checksum_address(request.donor_address),
+                'value': str(w3.to_wei(milestone.amount, 'ether')),
+                'nonce': current_nonce,
+                'gas': 2000000,
+                'gasPrice': w3.eth.gas_price
+            })
+            unsigned_transactions.append(tx)
+            current_nonce += 1
 
-            seq = create_escrow_response.result["tx_json"]["Sequence"]
-            escrows.append({"escrow_sequence": seq, "unlock_time": milestone.time})
-            print(f"Escrow {idx+1} created for release after: {milestone.time}")
-            idx += 1
-        return escrows
+        return {"unsigned_transactions": unsigned_transactions}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.post("/prepare_release_escrow")
+def prepare_release_escrow(request: PrepareEscrowActionRequest):
+    try:
+        escrow_contract = w3.eth.contract(address=w3.to_checksum_address(request.escrow_contract_address), abi=ESCROW_ABI)
+        tx = escrow_contract.functions.release().build_transaction({
+            'from': w3.to_checksum_address(request.donor_address),
+            'nonce': w3.eth.get_transaction_count(w3.to_checksum_address(request.donor_address)),
+            'gas': 100000,
+            'gasPrice': w3.eth.gas_price
+        })
+        return {"unsigned_transaction": tx}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/verify")
-def verify(
-    milestone_checkpoint: MilestoneCheckpoint,
-    request: DonationRequest,
-    create_escrow_response,
-):
-    shamir = ShamirSecretScheme()
-    if shamir.verify(request.completion):
-        finish_tx = EscrowFinish(
-            account=request.client.address,
-            owner=request.client.address,
-            offer_sequence=create_escrow_response.result["tx_json"]["Sequence"],
-        )
-
-        submit_and_wait(finish_tx, client, request.client)
-    else:
-        cancel_tx = EscrowCancel(
-            owner=request.recipient.address,
-            offer_sequence=create_escrow_response.result["tx_json"]["Sequence"],
-        )
-
-        submit_and_wait(cancel_tx, client, request.client)
+@router.post("/prepare_cancel_escrow")
+def prepare_cancel_escrow(request: PrepareEscrowActionRequest):
+    try:
+        escrow_contract = w3.eth.contract(address=w3.to_checksum_address(request.escrow_contract_address), abi=ESCROW_ABI)
+        tx = escrow_contract.functions.cancel().build_transaction({
+            'from': w3.to_checksum_address(request.donor_address),
+            'nonce': w3.eth.get_transaction_count(w3.to_checksum_address(request.donor_address)),
+            'gas': 100000,
+            'gasPrice': w3.eth.gas_price
+        })
+        return {"unsigned_transaction": tx}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

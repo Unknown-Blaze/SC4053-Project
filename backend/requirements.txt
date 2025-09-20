@@ -1,9 +1,7 @@
 fastapi
 uvicorn
-xrpl-py
+web3
 python-dotenv
-firebase-admin
 pydantic
 email-validator
-web3
-sympy
+py-solc-x
