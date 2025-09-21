@@ -28,9 +28,10 @@ const UserProfile = () => {
     // fetch transactions from FastAPI
     useEffect(() => {
         const fetchTransactions = async() => {
+            if (!currentUserProfile?.gemWalletAddress) return; // safety check
             setLoadingTransactions(true);
             try{
-                const res = await fetch("http://localhost:8000/latest-transactions");
+                const res = await fetch(`http://localhost:8000/latest-transactions?address=${currentUserProfile.gemWalletAddress}`);
                 if(!res.ok){
                     throw new Error("Failed to fetch transactions");
                 }
