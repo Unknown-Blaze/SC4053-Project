@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
+import { useAuth } from '../contexts/AuthContext';
 
 const XRPL_ADDRESS_REGEX = /^r[1-9A-HJ-NP-Za-km-z]{25,35}$/;
 
@@ -9,10 +10,16 @@ function CharityProjectForm() {
   const [description, setDescription] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [xrplWallet, setXrplWallet] = useState("");
+  const [ngoName, setNgoName] = useState("");
   const [milestones, setMilestones] = useState([{ description: "", amount: "" }]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
+  const { currentUserProfile } = useAuth();
 
+  useEffect(()=>{
+    setNgoName(currentUserProfile.organizationName);
+  }, [currentUserProfile]);
+  
   const handleMilestoneChange = (index, field, value) => {
     const updated = [...milestones];
     updated[index][field] = value;
@@ -62,6 +69,7 @@ function CharityProjectForm() {
           description,
           amount: parseFloat(amount),
         })),
+        ngoName: ngoName
       });
 
       setSuccess(`Charity project saved! Document ID: ${docRef.id}`);
