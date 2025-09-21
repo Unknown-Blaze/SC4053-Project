@@ -1,6 +1,7 @@
 // src/pages/ProjectDisplayPage.jsx
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useParams, useNavigate } from 'react-router-dom';
 import { FiDollarSign, FiCheckCircle, FiClock, FiLoader, FiArrowRightCircle, FiAlertCircle } from 'react-icons/fi';
 import classes from '../styles/ProjectDisplayPage.module.css';
 // sendPayment from @gemwallet/api is used on the ProjectDonationPage, not directly here.
@@ -8,32 +9,23 @@ import classes from '../styles/ProjectDisplayPage.module.css';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 
+// UPDATED: The endpoint now takes an 'address' parameter, not 'account'
 const LATEST_TRANSACTIONS_ENDPOINT = 'http://127.0.0.1:8000/transaction/latest-transactions';
-// Not using MILESTONE_STATUS_ENDPOINT_BASE for this specific fixed status requirement
-// const MILESTONE_STATUS_ENDPOINT_BASE = 'http://127.0.0.1:8000/projects';
 
 const ProjectDisplayPage = () => {
   const { projectId } = useParams();
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
   const [projectData, setProjectData] = useState(null);
   const [loadingProject, setLoadingProject] = useState(true);
   const [projectError, setProjectError] = useState(null);
 
-  // --- Transaction State ---
   const [transactions, setTransactions] = useState([]);
-  const [lastTxHash, setLastTxHash] = useState(null);
   const [isLoadingTx, setIsLoadingTx] = useState(false);
   const [txError, setTxError] = useState(null);
 
-  // --- Milestone State ---
-  // This state will now hold milestones with fixed statuses
   const [milestones, setMilestones] = useState([]);
-  // isLoadingMilestones and milestonesError might not be strictly needed if we're not fetching them dynamically anymore
-  // but keeping them doesn't hurt for now if you plan to reintroduce dynamic fetching later.
   const [isLoadingMilestones, setIsLoadingMilestones] = useState(false);
   const [milestonesError, setMilestonesError] = useState(null);
-  // advancingMilestones and handleRequestMilestoneAdvancement are removed as we're fixing statuses
-  // const [advancingMilestones, setAdvancingMilestones] = useState(false);
 
 
   // Fetch initial project details from Firestore
@@ -51,6 +43,11 @@ const ProjectDisplayPage = () => {
         const docSnap = await getDoc(projectDocRef);
         if (docSnap.exists()) {
           const data = { id: docSnap.id, ...docSnap.data() };
+
+          if (data.eth_wallet_address) {
+            data.recipientAddress = data.eth_wallet_address;
+          }
+
           setProjectData(data);
 
           // --- MODIFICATION FOR FIXED MILESTONE STATUSES ---
@@ -92,39 +89,16 @@ const ProjectDisplayPage = () => {
     fetchProject();
   }, [projectId]);
 
-  // --- Milestone Fetching Logic is REMOVED/COMMENTED OUT ---
-  // We are no longer polling a backend for milestone statuses.
-  // The statuses are fixed based on their index from Firestore data.
-
-  // const fetchMilestoneStatuses = useCallback(async () => {
-  //   // ...
-  // }, [projectId]);
-
-  // useEffect(() => {
-  //   if (projectId) {
-  //     // fetchMilestoneStatuses(); // No initial fetch needed for dynamic statuses
-  //     // const intervalId = setInterval(fetchMilestoneStatuses, 5000); // No polling
-  //     // return () => clearInterval(intervalId);
-  //   }
-  // }, [projectId /*, fetchMilestoneStatuses (removed) */]);
-
-  // handleRequestMilestoneAdvancement is REMOVED as the "Advance" button is also removed/commented out
-  // const handleRequestMilestoneAdvancement = async () => { ... };
-
-
-  // --- Transaction Fetching Logic (existing, ensure it's correct) ---
   const fetchTransactions = useCallback(async (isInitialFetch = false) => {
-    if (!projectData) return;
+    // We now need the ETHEREUM wallet address from the project data
+    if (!projectData?.eth_wallet_address) return;
     if (!isInitialFetch && isLoadingTx) return;
+
     setIsLoadingTx(true);
     setTxError(null);
     const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
-    if (lastTxHash && !isInitialFetch) {
-      url.searchParams.append('latest_tx_hash', lastTxHash);
-    }
-    if (projectData && projectData.eth_wallet_address) {
-        url.searchParams.append('account', projectData.eth_wallet_address);
-    }
+    // The backend endpoint now expects 'address'
+    url.searchParams.append('address', projectData.eth_wallet_address);
     try {
       const res = await fetch(url);
       if (!res.ok) {
@@ -132,32 +106,21 @@ const ProjectDisplayPage = () => {
         throw new Error(errorData.detail || `HTTP error! Status: ${res.status}`);
       }
       const data = await res.json();
-      const newTxs = data; // Assuming data is directly the array
-      if (newTxs && newTxs.length > 0) {
-        const formattedTxs = newTxs.map(txData => {
-            const tx = txData.tx || txData.transaction || txData;
-            const meta = txData.meta || {};
-            let amount = 'N/A';
-            if (tx.TransactionType === "Payment") {
-              if (typeof tx.Amount === 'string') amount = `${parseFloat(tx.Amount) / 1000000} XRP`;
-              else if (typeof tx.Amount === 'object') amount = `${tx.Amount.value} ${tx.Amount.currency}`;
-            }
-            if (meta.delivered_amount) {
-               if (typeof meta.delivered_amount === 'string') amount = `${parseFloat(meta.delivered_amount) / 1000000} XRP (Delivered)`;
-               else if (typeof meta.delivered_amount === 'object') amount = `${meta.delivered_amount.value} ${meta.delivered_amount.currency} (Delivered)`;
-            }
-            return {
-              hash: txData.hash || tx.hash, type: tx.TransactionType || 'Unknown',
-              account: tx.Account || 'Unknown Source', destination: tx.Destination || 'Unknown Destination',
-              amount: amount,
-              name: tx.Account ? `User (${tx.Account.substring(0, 5)}...${tx.Account.substring(tx.Account.length - 5)})` : 'Anonymous Donor',
-              email: tx.TransactionType === "Payment" ? `To: ${ (tx.Destination || 'Project Wallet').substring(0, 8) }...` : 'Blockchain Interaction',
-              timestamp: tx.date ? new Date( (tx.date + 946684800) * 1000).toLocaleString() : new Date().toLocaleString(),
-            };
-          }).filter(Boolean);
-        if (isInitialFetch) setTransactions(formattedTxs.slice(0, 5));
-        else setTransactions(prevTxs => [...formattedTxs, ...prevTxs].slice(0, 5));
-        if (formattedTxs.length > 0) setLastTxHash(formattedTxs[0].hash);
+
+      // The backend now returns a simple list of transactions
+      const newTxs = data.transactions || [];
+
+      if (newTxs.length > 0) {
+        // Format the Ethereum transaction data
+        const formattedTxs = newTxs.map(tx => ({
+          hash: tx.hash,
+          name: `User (${tx.from.substring(0, 5)}...${tx.from.substring(tx.from.length - 5)})`,
+          email: `To: ${(tx.to || 'Contract').substring(0, 8)}...`,
+          amount: `${parseFloat(tx.value_ether).toFixed(4)} ETH`,
+        }));
+
+        // We are just displaying the latest 5, so no need for complex state updates
+        setTransactions(formattedTxs.slice(0, 5));
       } else if (isInitialFetch) {
         setTransactions([]);
       }
@@ -167,22 +130,17 @@ const ProjectDisplayPage = () => {
     } finally {
       setIsLoadingTx(false);
     }
-  }, [lastTxHash, isLoadingTx, projectData]);
+  }, [isLoadingTx, projectData]);
 
   useEffect(() => {
     if (projectData) fetchTransactions(true);
-  }, [projectData, fetchTransactions]);
-
-  useEffect(() => {
-    if (!projectData) return () => {};
-    const intervalId = setInterval(() => fetchTransactions(false), 10000);
-    return () => clearInterval(intervalId);
-  }, [fetchTransactions, projectData]);
+  }, [projectData]); // Removed fetchTransactions from dependency array to prevent re-running on every render
 
 
-  // --- Navigation Handler for "Donate to Cause" button ---
+  // --- Navigation Handler (This is now correct because projectData has the right field) ---
   const handleNavigateToDonatePage = () => {
     if (projectData && projectData.id) {
+      // projectData now contains the 'recipientAddress' field, so this will work.
       navigate(`/donate/project/${projectData.id}`, { state: { project: projectData } });
     } else {
       console.error("Cannot navigate to donation page: projectData or projectData.id is missing.");
@@ -201,7 +159,7 @@ const ProjectDisplayPage = () => {
     return <div className={classes.pageContainer} style={{ textAlign: 'center', paddingTop: '50px' }}><FiLoader className={classes.spinner} style={{ fontSize: '2em' }} /> <p>Loading project details...</p></div>;
   }
   if (projectError) {
-    return <div className={classes.pageContainer} style={{ textAlign: 'center', paddingTop: '50px' }}><FiAlertCircle style={{ fontSize: '2em', color: 'red' }}/> <p>{projectError}</p></div>;
+    return <div className={classes.pageContainer} style={{ textAlign: 'center', paddingTop: '50px' }}><FiAlertCircle style={{ fontSize: '2em', color: 'red' }} /> <p>{projectError}</p></div>;
   }
   if (!projectData) {
     return <div className={classes.pageContainer}><p>Project information is unavailable.</p></div>;
@@ -221,7 +179,7 @@ const ProjectDisplayPage = () => {
             <h2>Recent Donations</h2>
             {isLoadingTx && !transactions.length && <FiLoader className={classes.txLoadingSpinner} />}
           </div>
-          {txError && <p className={classes.txErrorMessage}><FiAlertCircle/> {txError}</p>}
+          {txError && <p className={classes.txErrorMessage}><FiAlertCircle /> {txError}</p>}
           {!isLoadingTx && transactions.length === 0 && !txError && <p className={classes.noTransactions}>No recent donations.</p>}
           <ul className={classes.transactionList}>
             {transactions.map((tx, index) => (
@@ -242,23 +200,23 @@ const ProjectDisplayPage = () => {
             {/* "Advance Next Milestone (Simulate)" button is removed as statuses are fixed */}
           </div>
           {/* isLoadingMilestones might still be useful if initial processing takes time, but not for network loading */}
-          {isLoadingMilestones && milestones.length === 0 && <FiLoader className={classes.spinner} /> }
+          {isLoadingMilestones && milestones.length === 0 && <FiLoader className={classes.spinner} />}
           {/* milestonesError would now relate to issues processing Firestore data, not fetching from a status API */}
-          {milestonesError && <p className={classes.errorMessage}><FiAlertCircle/> {milestonesError}</p>}
-          
+          {milestonesError && <p className={classes.errorMessage}><FiAlertCircle /> {milestonesError}</p>}
+
           <ul className={classes.milestoneList}>
             {milestones.length > 0 ? (
               milestones.map((milestone) => ( // milestones state already has the fixed statuses
                 <li key={milestone.id} // Ensure milestone.id is unique
-                    className={`${classes.milestoneItem} ${classes[(milestone.status).toLowerCase().replace(' ', '')]}`}>
+                  className={`${classes.milestoneItem} ${classes[(milestone.status).toLowerCase().replace(' ', '')]}`}>
                   {getMilestoneStatusIcon(milestone.status)}
                   <div className={classes.milestoneInfo}>
                     <h3 className={classes.milestoneTitle}>{milestone.name || "Milestone"}</h3>
                     {milestone.description && <p className={classes.milestoneDetails}>{milestone.description}</p>}
                     {milestone.amount && ( // Assuming 'amount' is part of the milestone object from Firestore
-                        <p className={classes.milestoneAmount}>
-                            Target: {milestone.amount} XRP
-                        </p>
+                      <p className={classes.milestoneAmount}>
+                        Target: {milestone.amount} Ethereum
+                      </p>
                     )}
                     <p className={classes.milestoneStatusText}>Status: {milestone.status}</p>
                   </div>
@@ -269,6 +227,7 @@ const ProjectDisplayPage = () => {
             ) : null}
           </ul>
           <div className={classes.donate}>
+            {/* UPDATED: The disabled check should now look for the Ethereum wallet */}
             <button onClick={handleNavigateToDonatePage} disabled={!projectData || !projectData.eth_wallet_address}>
               <FiDollarSign /> Donate to Cause
             </button>
