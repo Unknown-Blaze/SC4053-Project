@@ -122,8 +122,8 @@ const ProjectDisplayPage = () => {
     if (lastTxHash && !isInitialFetch) {
       url.searchParams.append('latest_tx_hash', lastTxHash);
     }
-    if (projectData && projectData.xrpl_wallet) {
-        url.searchParams.append('account', projectData.xrpl_wallet);
+    if (projectData && projectData.eth_wallet_address) {
+        url.searchParams.append('account', projectData.eth_wallet_address);
     }
     try {
       const res = await fetch(url);
@@ -269,10 +269,10 @@ const ProjectDisplayPage = () => {
             ) : null}
           </ul>
           <div className={classes.donate}>
-            <button onClick={handleNavigateToDonatePage} disabled={!projectData || !projectData.xrpl_wallet}>
+            <button onClick={handleNavigateToDonatePage} disabled={!projectData || !projectData.eth_wallet_address}>
               <FiDollarSign /> Donate to Cause
             </button>
-            {(!projectData || !projectData.xrpl_wallet) && <p style={{fontSize: '0.8em', color: 'gray'}}>Donations unavailable.</p>}
+            {(!projectData || !projectData.eth_wallet_address) && <p style={{fontSize: '0.8em', color: 'gray'}}>Donations unavailable.</p>}
           </div>
         </div>
       </div>
