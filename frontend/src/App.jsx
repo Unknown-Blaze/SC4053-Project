@@ -140,7 +140,7 @@ function AppLayout() {
           {currentUser ? (
             <>
               <NavLink
-                to="/userprofile" // <<<< CHANGED: Link to /userprofile
+                to="/userprofile" 
                 style={({ isActive }) =>
                   isActive
                     ? { ...navStyles.link, ...navStyles.activeLink }
@@ -149,37 +149,31 @@ function AppLayout() {
               >
                 {profileName}
               </NavLink>
-              {/* <NavLink
-                to="/nftPage" // Assuming this is a public gallery page
-                style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
-                }
-              >
-                NFT Gallery
-              </NavLink> */}
-              <NavLink
-                to="/projectsPage" // Assuming this is a public gallery page
-                style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
-                }
-              >
-                Projects Gallery
-              </NavLink>
-              {/* Optional: Link to create project if user is logged in */}
-              {/* <NavLink
-                to="/createproject"
-                style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
-                }
-              >
-                Create Project
-              </NavLink> */}
+
+                <NavLink
+                  to="/projectsPage" // Assuming this is a public gallery page
+                  style={({ isActive }) =>
+                    isActive
+                      ? { ...navStyles.link, ...navStyles.activeLink }
+                      : navStyles.link
+                  }
+                >
+                  Projects Gallery
+                </NavLink>
+
+              {currentUserProfile.userType === "nonprofit" && (
+                <NavLink
+                  to="/createproject"
+                  style={({ isActive }) =>
+                    isActive
+                      ? { ...navStyles.link, ...navStyles.activeLink }
+                      : navStyles.link
+                  }
+                >
+                  Create Project
+                </NavLink>
+              )}
+
               <button
                 onClick={handleLogout}
                 style={navStyles.authButton}
