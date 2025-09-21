@@ -9,10 +9,12 @@ import { Link } from 'react-router-dom';
 const UserProfile = () => {
     const { currentUserProfile, updateUserProfile } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [expanded, setExpanded] = useState(false);
     const [formData, setFormData] = useState({ displayName: '' });
     const [projects, setProjects] = useState([]);
     const [loadingProjects, setLoadingProjects] = useState(true);
+
+    const [transactions, setTransactions] = useState([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(true);
 
     useEffect(() => {
         if (currentUserProfile) {
@@ -23,22 +25,25 @@ const UserProfile = () => {
         }
     }, [currentUserProfile]);
 
+    // fetch transactions from FastAPI
     useEffect(() => {
-        const loadProjects = async () => {
-            setLoadingProjects(true);
-            try {
-                const projectsRef = collection(db, 'charity_projects');
-                const q = query(projectsRef);
-                const querySnapshot = await getDocs(q);
-                const projectsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setProjects(projectsData);
-            } catch (error) {
-                console.error('Error fetching projects:', error);
-            } finally {
-                setLoadingProjects(false);
+        const fetchTransactions = async() => {
+            setLoadingTransactions(true);
+            try{
+                const res = await fetch("http://localhost:8000/latest-transactions");
+                if(!res.ok){
+                    throw new Error("Failed to fetch transactions");
+                }
+                const data = await res.json();
+                setTransactions(data.transactions || []);
+            } catch(err){
+                console.error("Error fetching transactions:", err);
+            } finally{
+                setLoadingTransactions(false);
             }
         };
-        loadProjects();
+
+        fetchTransactions();
     }, []);
 
     const handleInputChange = (e) => {
@@ -77,12 +82,6 @@ const UserProfile = () => {
             displayName: currentUserProfile?.displayName || ''
         });
         setIsEditing(false);
-    };
-
-    const getShortAddress = (addr) => {
-        if (!addr) return 'Not set';
-        if (addr.length <= 12) return addr;
-        return `${addr.slice(0, 6)}......${addr.slice(-6)}`;
     };
 
     // Add a check for loading currentUserProfile to prevent rendering with undefined data
@@ -154,28 +153,43 @@ const UserProfile = () => {
                     )}
                 </div>
 
-                {/* Project List */}
-                {/* <div className={styles.projectsSection}>
+                {/* Transactions List (use projects styling) */}
+                <div className={styles.projectsSection}>
                     <div className={styles.titleContainer}>
-                        <h3 className={styles.projectsTitle}>All Projects</h3>
+                        <h3 className={styles.projectsTitle}>Latest Transactions</h3>
                     </div>
-                    {loadingProjects ? (
-                        <p>Loading projects...</p>
-                    ) : projects.length > 0 ? (
+                    {loadingTransactions ? (
+                        <p>Loading transactions...</p>
+                    ) : transactions.length > 0 ? (
                         <ul className={styles.projectsList}>
-                            {projects.map(project => (
-                                <li key={project.id} className={styles.projectItem}>
-                                    <Link to={`/projects/${project.id}`} className={styles.projectLink}>
-                                        <div><strong>Name:</strong> {project.name || 'Unnamed Project'}</div>
-                                        <div><strong>Description:</strong> {project.description || 'No description available.'}</div>
-                                    </Link>
+                            {transactions.map(transaction => (
+                                <li key={transaction.hash} className={styles.projectItem}>
+                                    <p>
+                                        <strong>Hash:</strong>{""}
+                                        <a
+                                            href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {transaction.hash.slice(0,10)}...
+                                        </a>
+                                    </p>
+
+                                     <p><strong>From:</strong> {transaction.from}</p>
+                                     <p><strong>To:</strong> {transaction.to}</p>
+                                     <p><strong>Value:</strong> {transaction.value_ether} ETH</p>
+                                     <p><strong>Block:</strong> {transaction.blockNumber}</p>
+                                     <p>
+                                        <strong>Time:</strong>{" "}
+                                        {new Date(tx.timeStamp * 1000).toLocaleString()}
+                                    </p>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p>No projects found.</p>
+                        <p>No transactions found.</p>
                     )}
-                </div> */}
+                </div>
             </div>
         </div>
     );
