@@ -31,6 +31,8 @@ const UserProfile = () => {
             if (!currentUserProfile?.gemWalletAddress) return; // safety check
             setLoadingTransactions(true);
             try{
+                // api returns all the normal transactions where the address is either the sender or the reciever 
+                // assuming the user can only make transactions and not receive, this should be okay
                 const res = await fetch(`http://localhost:8000/latest-transactions?address=${currentUserProfile.gemWalletAddress}`);
                 if(!res.ok){
                     throw new Error("Failed to fetch transactions");
