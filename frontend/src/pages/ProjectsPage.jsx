@@ -4,11 +4,14 @@ import { Link } from 'react-router-dom';
 import { collection, getDocs, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import styles from '../styles/ProjectsPage.module.css';
+import { useAuth } from '../contexts/AuthContext';
+
 
 const ProjectsGallery = () => {
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [selectedOrg, setSelectedOrg] = useState("All"); // ✅ Track selected organisation
+  const { currentUserProfile } = useAuth(); // Added loadingAuth
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -32,6 +35,13 @@ const ProjectsGallery = () => {
     loadProjects();
   }, []);
 
+  useEffect(() => {
+    if (currentUserProfile?.userType === "nonprofit") {
+      setSelectedOrg(currentUserProfile.organizationName || "All");
+    }
+  }, [currentUserProfile]);
+
+
   // ✅ Extract unique organisations from projects
   const organisations = ["All", ...new Set(projects.map((p) => p.ngoName || "Unknown"))];
 
@@ -47,18 +57,24 @@ const ProjectsGallery = () => {
         <h3 className={styles.projectsTitle}>All Projects</h3>
       </div>
 
-      {/* ✅ Filter Buttons */}
-      <div className={styles.filterContainer}>
-        {organisations.map((org) => (
-          <button
-            key={org}
-            className={`${styles.filterButton} ${selectedOrg === org ? styles.activeFilter : ""}`}
-            onClick={() => setSelectedOrg(org)}
-          >
-            {org}
-          </button>
-        ))}
-      </div>
+      {/* Filter Buttons */}
+      {/* only the donor can filter based on organisation */}
+      {/* non profits can only see projects of their own organisation */}
+      {
+        currentUserProfile.userType === "donor" && (
+          <div className={styles.filterContainer}>
+            {organisations.map((org) => (
+              <button
+                key={org}
+                className={`${styles.filterButton} ${selectedOrg === org ? styles.activeFilter : ""}`}
+                onClick={() => setSelectedOrg(org)}
+              >
+                {org}
+              </button>
+            ))}
+          </div>
+        )
+      }
 
       {loadingProjects ? (
         <p>Loading projects...</p>
