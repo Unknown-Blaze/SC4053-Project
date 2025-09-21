@@ -1,8 +1,9 @@
 // src/components/CreateProject.jsx (or wherever you have this file)
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 import { ethers } from 'ethers'; // Import ethers for validation
+import { useAuth } from '../contexts/AuthContext';
 
 // REMOVED: const XRPL_ADDRESS_REGEX = /^r[1-9A-HJ-NP-Za-km-z]{25,35}$/;
 
@@ -192,8 +193,7 @@ function CharityProjectForm() {
         Add Another Milestone
       </button>
 
-      <br />
-      <button type="submit" style={{ marginTop: 20, padding: '10px', cursor: 'pointer' }}>
+      <button type="submit" style={{ marginTop: 5, padding: '5px', cursor: 'pointer' }}>
         Submit Project for Review
       </button>
     </form>

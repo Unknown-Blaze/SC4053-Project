@@ -162,15 +162,11 @@ const UserProfile = () => {
                                     <strong className={styles.infoLabel}>Wallet Address:</strong>
                                     <span className={styles.infoValue}>
                                         {/* CHANGED: Point to walletAddress instead of gemWalletAddress */}
-                                        {expanded ? currentUserProfile?.walletAddress : getShortAddress(currentUserProfile?.walletAddress)}
-                                        {currentUserProfile?.walletAddress && currentUserProfile?.walletAddress.length > 12 && (
-                                            <button
-                                                onClick={() => setExpanded(!expanded)}
-                                                className={styles.addressToggleButton}
-                                            >
-                                                {expanded ? 'Hide' : 'Show full'}
-                                            </button>
-                                        )}
+                                        {
+                                            currentUserProfile?.walletAddress && (
+                                                <span className={styles.infoValue}>{currentUserProfile?.walletAddress}</span>
+                                            )
+                                        }
                                         {/* CHANGED: Check for walletAddress to display the "Not connected" message */}
                                         {!currentUserProfile?.walletAddress && (
                                             <span style={{ fontStyle: 'italic', color: '#7f8c8d' }}> (Not connected)</span>
