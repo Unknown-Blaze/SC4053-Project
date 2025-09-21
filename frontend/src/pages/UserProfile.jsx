@@ -35,7 +35,7 @@ const UserProfile = () => {
                     throw new Error("Failed to fetch transactions");
                 }
                 const data = await res.json();
-                setTransactions(data.transactions || []);
+                setTransactions(data.transactions ||[]);
             } catch(err){
                 console.error("Error fetching transactions:", err);
             } finally{
@@ -45,6 +45,61 @@ const UserProfile = () => {
 
         fetchTransactions();
     }, []);
+
+    // dummy transactions
+    // useEffect(() => {
+    //     setTransactions([
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //     ]);
+    //     setLoadingTransactions(false);
+    // }, []);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -154,24 +209,24 @@ const UserProfile = () => {
                 </div>
 
                 {/* Transactions List (use projects styling) */}
-                <div className={styles.projectsSection}>
-                    <div className={styles.titleContainer}>
-                        <h3 className={styles.projectsTitle}>Latest Transactions</h3>
+                <div className={styles.transactionsSection}>
+                    <div className={styles.transactionsContainer}>
+                        <h3 className={styles.transactionsTitle}>Latest Transactions</h3>
                     </div>
                     {loadingTransactions ? (
                         <p>Loading transactions...</p>
                     ) : transactions.length > 0 ? (
-                        <ul className={styles.projectsList}>
+                        <ul className={styles.transactionsList}>
                             {transactions.map(transaction => (
-                                <li key={transaction.hash} className={styles.projectItem}>
+                                <li key={transaction.hash} className={styles.transactionItem}>
                                     <p>
                                         <strong>Hash:</strong>{""}
                                         <a
-                                            href={`https://sepolia.etherscan.io/tx/${tx.hash}`}
+                                            href={`https://sepolia.etherscan.io/tx/${transaction.hash}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                         >
-                                            {transaction.hash.slice(0,10)}...
+                                            {transaction.hash.slice(0,30)}...
                                         </a>
                                     </p>
 
@@ -181,7 +236,7 @@ const UserProfile = () => {
                                      <p><strong>Block:</strong> {transaction.blockNumber}</p>
                                      <p>
                                         <strong>Time:</strong>{" "}
-                                        {new Date(tx.timeStamp * 1000).toLocaleString()}
+                                        {new Date(transaction.timeStamp * 1000).toLocaleString()}
                                     </p>
                                 </li>
                             ))}
