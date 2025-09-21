@@ -16,10 +16,10 @@
 
 .projectsSection {
     max-width: 100%;      /* Remove max-width limit */
-    margin: 2rem 0;       /* Keep vertical margin only */
-    padding: 2rem 3rem;   /* Optional: increase horizontal padding */
+    margin: 2rem 2rem;       /* Keep vertical margin only */
+    padding: 3rem 3rem 5rem 3rem;
     border-radius: 12px;
-    /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #2c3e50;
     background: #fefefe;
