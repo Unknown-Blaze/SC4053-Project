@@ -1,4 +1,4 @@
-.projectsSection {
+/* .projectsSection {
   flex: 1 1 80%;
   background: #ffffff;
   padding: 2rem;
@@ -7,12 +7,23 @@
   max-height: 540px;
   overflow-y: auto;
 
-  /* custom scrollbar */
+   custom scrollbar 
   scrollbar-width: thin;
   scrollbar-color: #4a90e2 #f0f4ff;
 
   position: relative;
-}
+} */
+
+.projectsSection {
+    max-width: 100%;      /* Remove max-width limit */
+    margin: 2rem 0;       /* Keep vertical margin only */
+    padding: 2rem 3rem;   /* Optional: increase horizontal padding */
+    border-radius: 12px;
+    /* box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2c3e50;
+    background: #fefefe;
+  }
 
 /* Webkit scrollbars */
 .projectsSection::-webkit-scrollbar {
@@ -42,7 +53,7 @@
 
 .profileTitle,
 .projectsTitle {
-  font-size: 1.5rem;
+  font-size: 1.7rem;
   font-weight: 700;
   color: #1a2a3a;
   letter-spacing: 0.5px;
