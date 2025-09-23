@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink, NavLink, Navigate } from 'react-router-dom';
+import {BrowserRouter as Router,Routes,Route,Link as RouterLink,NavLink,Navigate,useNavigate} from 'react-router-dom';
 
 import { useAuth } from './contexts/AuthContext';
 import HomePage from './pages/HomePage';
@@ -95,10 +95,12 @@ export default function App() {
 
 function AppLayout() {
   const { currentUser, logout, currentUserProfile, loadingAuth } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
+      navigate("/login", { replace: true }); 
     } catch (error) {
       console.error("Failed to log out", error);
       alert("Logout failed. Please try again.");
@@ -187,40 +189,37 @@ function AppLayout() {
         </div>
       </nav>
 
-      {/* Add top margin so navbar doesn’t overlap content */}
-      {/* <div style={{ marginTop: "80px" }}> */}
-        <Routes>
-          {/* Default Route */}
-          <Route
-            path="/"
-            element={
-              currentUser ? <Navigate to="/userprofile" replace /> : <Navigate to="/landing" replace />
-            }
-          />
+      <Routes>
+        {/* Default Route */}
+        <Route
+          path="/"
+          element={
+            currentUser ? <Navigate to="/userprofile" replace /> : <Navigate to="/landing" replace />
+          }
+        />
 
-          {/* Public Routes */}
-          <Route path="/landing" element={<HomePage />} />
-          <Route path="/nft" element={<MintNFTPage />} />
-          <Route path="/projects" element={<ProjectsGallery />} />
-          <Route path="/projects/:projectId" element={<ProjectDisplayPage />} />
+        {/* Public Routes */}
+        <Route path="/landing" element={<HomePage />} />
+        <Route path="/nft" element={<MintNFTPage />} />
+        <Route path="/projects" element={<ProjectsGallery />} />
+        <Route path="/projects/:projectId" element={<ProjectDisplayPage />} />
 
-          {/* Routes only for Unauthenticated Users */}
-          <Route element={<PublicOnlyRoute />}>
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/login" element={<UserLoginPage />} />
-          </Route>
+        {/* Routes only for Unauthenticated Users */}
+        <Route element={<PublicOnlyRoute />}>
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/login" element={<UserLoginPage />} />
+        </Route>
 
-          {/* Protected Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="/userprofile" element={<UserProfile />} />
-            <Route path="/createproject" element={<CharityProjectForm />} />
-            <Route path="/donate/project/:projectId" element={<ProjectDonationPage />} />
-          </Route>
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/userprofile" element={<UserProfile />} />
+          <Route path="/createproject" element={<CharityProjectForm />} />
+          <Route path="/donate/project/:projectId" element={<ProjectDonationPage />} />
+        </Route>
 
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      {/* </div> */}
+        {/* Catch-all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
     </>
   );
 }
