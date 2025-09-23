@@ -61,7 +61,7 @@ const ProjectsGallery = () => {
       {/* only the donor can filter based on organisation */}
       {/* non profits can only see projects of their own organisation */}
       {
-        currentUserProfile.userType === "donor" && (
+        (!currentUserProfile || currentUserProfile.userType === "donor")  && (
           <div className={styles.filterContainer}>
             {organisations.map((org) => (
               <button
