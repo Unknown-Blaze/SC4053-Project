@@ -1,9 +1,9 @@
 // src/components/CreateProject.jsx (or wherever you have this file)
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 import { ethers } from 'ethers'; // Import ethers for validation
+import { useAuth } from '../contexts/AuthContext';
 
 // REMOVED: const XRPL_ADDRESS_REGEX = /^r[1-9A-HJ-NP-Za-km-z]{25,35}$/;
 
@@ -11,12 +11,17 @@ function CharityProjectForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [contactEmail, setContactEmail] = useState("");
-  // CHANGED: State renamed for clarity
   const [ethWalletAddress, setEthWalletAddress] = useState("");
+  const [ngoName, setNgoName] = useState("");
   const [milestones, setMilestones] = useState([{ name: "", description: "", amount: "" }]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(null);
+  const { currentUserProfile } = useAuth();
 
+  useEffect(()=>{
+    setNgoName(currentUserProfile.organizationName);
+  }, [currentUserProfile]);
+  
   const handleMilestoneChange = (index, field, value) => {
     const updated = [...milestones];
     updated[index][field] = value;
@@ -72,6 +77,7 @@ function CharityProjectForm() {
           description,
           amount: parseFloat(amount),
         })),
+        ngoName: ngoName
       });
 
       setSuccess(`Charity project saved successfully! Document ID: ${docRef.id}`);
@@ -187,8 +193,7 @@ function CharityProjectForm() {
         Add Another Milestone
       </button>
 
-      <br />
-      <button type="submit" style={{ marginTop: 20, padding: '10px', cursor: 'pointer' }}>
+      <button type="submit" style={{ marginTop: 5, padding: '5px', cursor: 'pointer' }}>
         Submit Project for Review
       </button>
     </form>

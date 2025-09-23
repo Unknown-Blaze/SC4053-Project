@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiDollarSign, FiCheckCircle, FiClock, FiLoader, FiArrowRightCircle, FiAlertCircle } from 'react-icons/fi';
-import classes from './ProjectDisplayPage.module.css';
+import classes from '../styles/ProjectDisplayPage.module.css';
+// sendPayment from @gemwallet/api is used on the ProjectDonationPage, not directly here.
+// import { sendPayment } from '@gemwallet/api';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 
@@ -97,7 +99,6 @@ const ProjectDisplayPage = () => {
     const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
     // The backend endpoint now expects 'address'
     url.searchParams.append('address', projectData.eth_wallet_address);
-
     try {
       const res = await fetch(url);
       if (!res.ok) {

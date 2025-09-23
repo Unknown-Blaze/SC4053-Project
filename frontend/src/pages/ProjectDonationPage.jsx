@@ -5,8 +5,7 @@ import { useParams, useLocation, Link } from 'react-router-dom';
 import { ethers } from 'ethers'; // Import ethers
 import { useAuth } from '../contexts/AuthContext'; // Import useAuth to get user info
 import { FiDollarSign, FiArrowLeft, FiCheckCircle, FiLoader, FiAlertCircle } from 'react-icons/fi';
-import classes from './ProjectDonationPage.module.css';
-// Removed: import { sendPayment } from '@gemwallet/api';
+import classes from '../styles/ProjectDonationPage.module.css';
 
 // NOTE: Your project data MUST now include the recipient's Ethereum address.
 // For example: { id: '1', name: '...', recipientAddress: '0x...' }

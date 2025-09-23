@@ -3,16 +3,18 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import styles from './UserProfile.module.css';
+import styles from '../styles/UserProfile.module.css'
 import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
     const { currentUserProfile, updateUserProfile } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [expanded, setExpanded] = useState(false);
     const [formData, setFormData] = useState({ displayName: '' });
     const [projects, setProjects] = useState([]);
     const [loadingProjects, setLoadingProjects] = useState(true);
+
+    const [transactions, setTransactions] = useState([]);
+    const [loadingTransactions, setLoadingTransactions] = useState(true);
 
     useEffect(() => {
         if (currentUserProfile) {
@@ -23,23 +25,84 @@ const UserProfile = () => {
         }
     }, [currentUserProfile]);
 
+    // fetch transactions from FastAPI
     useEffect(() => {
-        const loadProjects = async () => {
-            setLoadingProjects(true);
-            try {
-                const projectsRef = collection(db, 'charity_projects');
-                const q = query(projectsRef);
-                const querySnapshot = await getDocs(q);
-                const projectsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setProjects(projectsData);
-            } catch (error) {
-                console.error('Error fetching projects:', error);
-            } finally {
-                setLoadingProjects(false);
+        const fetchTransactions = async() => {
+            if (!currentUserProfile?.gemWalletAddress) return; // safety check
+            setLoadingTransactions(true);
+            try{
+                // api returns all the normal transactions where the address is either the sender or the reciever 
+                // assuming the user can only make transactions and not receive, this should be okay
+                const res = await fetch(`http://localhost:8000/latest-transactions?address=${currentUserProfile.gemWalletAddress}`);
+                if(!res.ok){
+                    throw new Error("Failed to fetch transactions");
+                }
+                const data = await res.json();
+                setTransactions(data.transactions ||[]);
+            } catch(err){
+                console.error("Error fetching transactions:", err);
+            } finally{
+                setLoadingTransactions(false);
             }
         };
-        loadProjects();
+
+        fetchTransactions();
     }, []);
+
+    // dummy transactions
+    // useEffect(() => {
+    //     setTransactions([
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //         {
+    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
+    //         from: "0x1234567890abcdef1234567890abcdef12345678",
+    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+    //         value_ether: "0.5",
+    //         blockNumber: "5489213",
+    //         timeStamp: "1695209123",
+    //         },
+    //         {
+    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
+    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
+    //         to: "0x9876543210fedcba9876543210fedcba98765432",
+    //         value_ether: "2.134",
+    //         blockNumber: "5489200",
+    //         timeStamp: "1695208000",
+    //         },
+    //     ]);
+    //     setLoadingTransactions(false);
+    // }, []);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -71,12 +134,7 @@ const UserProfile = () => {
         setIsEditing(false);
     };
 
-    const getShortAddress = (addr) => {
-        if (!addr) return 'Not set';
-        if (addr.length <= 12) return addr;
-        return `${addr.slice(0, 6)}......${addr.slice(-6)}`;
-    };
-
+    // Add a check for loading currentUserProfile to prevent rendering with undefined data
     if (!currentUserProfile) {
         return (
             <div className={styles.userProfileContainer} style={{ textAlign: 'center', padding: '50px' }}>
@@ -104,15 +162,11 @@ const UserProfile = () => {
                                     <strong className={styles.infoLabel}>Wallet Address:</strong>
                                     <span className={styles.infoValue}>
                                         {/* CHANGED: Point to walletAddress instead of gemWalletAddress */}
-                                        {expanded ? currentUserProfile?.walletAddress : getShortAddress(currentUserProfile?.walletAddress)}
-                                        {currentUserProfile?.walletAddress && currentUserProfile?.walletAddress.length > 12 && (
-                                            <button
-                                                onClick={() => setExpanded(!expanded)}
-                                                className={styles.addressToggleButton}
-                                            >
-                                                {expanded ? 'Hide' : 'Show full'}
-                                            </button>
-                                        )}
+                                        {
+                                            currentUserProfile?.walletAddress && (
+                                                <span className={styles.infoValue}>{currentUserProfile?.walletAddress}</span>
+                                            )
+                                        }
                                         {/* CHANGED: Check for walletAddress to display the "Not connected" message */}
                                         {!currentUserProfile?.walletAddress && (
                                             <span style={{ fontStyle: 'italic', color: '#7f8c8d' }}> (Not connected)</span>
@@ -149,26 +203,41 @@ const UserProfile = () => {
                     )}
                 </div>
 
-                {/* Project List */}
-                <div className={styles.projectsSection}>
-                    <div className={styles.titleContainer}>
-                        <h3 className={styles.projectsTitle}>All Projects</h3>
+                {/* Transactions List (use projects styling) */}
+                <div className={styles.transactionsSection}>
+                    <div className={styles.transactionsContainer}>
+                        <h3 className={styles.transactionsTitle}>Latest Transactions</h3>
                     </div>
-                    {loadingProjects ? (
-                        <p>Loading projects...</p>
-                    ) : projects.length > 0 ? (
-                        <ul className={styles.projectsList}>
-                            {projects.map(project => (
-                                <li key={project.id} className={styles.projectItem}>
-                                    <Link to={`/projects/${project.id}`} className={styles.projectLink}>
-                                        <div><strong>Name:</strong> {project.name || 'Unnamed Project'}</div>
-                                        <div><strong>Description:</strong> {project.description || 'No description available.'}</div>
-                                    </Link>
+                    {loadingTransactions ? (
+                        <p>Loading transactions...</p>
+                    ) : transactions.length > 0 ? (
+                        <ul className={styles.transactionsList}>
+                            {transactions.map(transaction => (
+                                <li key={transaction.hash} className={styles.transactionItem}>
+                                    <p>
+                                        <strong>Hash:</strong>{""}
+                                        <a
+                                            href={`https://sepolia.etherscan.io/tx/${transaction.hash}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {transaction.hash.slice(0,30)}...
+                                        </a>
+                                    </p>
+
+                                     <p><strong>From:</strong> {transaction.from}</p>
+                                     <p><strong>To:</strong> {transaction.to}</p>
+                                     <p><strong>Value:</strong> {transaction.value_ether} ETH</p>
+                                     <p><strong>Block:</strong> {transaction.blockNumber}</p>
+                                     <p>
+                                        <strong>Time:</strong>{" "}
+                                        {new Date(transaction.timeStamp * 1000).toLocaleString()}
+                                    </p>
                                 </li>
                             ))}
                         </ul>
                     ) : (
-                        <p>No projects found.</p>
+                        <p>No transactions found.</p>
                     )}
                 </div>
             </div>

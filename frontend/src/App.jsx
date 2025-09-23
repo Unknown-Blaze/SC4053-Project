@@ -1,32 +1,30 @@
 // src/App.jsx
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link as RouterLink, NavLink, Navigate } from 'react-router-dom';
+import {BrowserRouter as Router,Routes,Route,Link as RouterLink,NavLink,Navigate,useNavigate} from 'react-router-dom';
 
 import { useAuth } from './contexts/AuthContext';
-import HomePage from './pages/HomePage'; // This will be our landing page
-// AdminLoginPage might not be needed if admin logic is integrated elsewhere or secured differently
-// import AdminLoginPage from './pages/AdminLoginPage';
+import HomePage from './pages/HomePage';
 import ProjectDonationPage from './pages/ProjectDonationPage';
 import UserLoginPage from './pages/UserLoginPage';
 import SignupPage from './pages/SignUpPage';
 import { usePageTracking } from './utils/analytics';
 import MintNFTPage from './pages/MintNFT';
+import ProjectsGallery from './pages/ProjectsPage';
 import CharityProjectForm from "./pages/CreateProject";
 import ProjectDisplayPage from './pages/ProjectDisplayPage';
-import UserProfile from './pages/UserProfile'; // This is the component for /userprofile
+import UserProfile from './pages/UserProfile';
 
-// Import the route protection components
-import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute'; // Adjust path if needed
+import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute';
 
 const navStyles = {
   nav: {
-    background: 'linear-gradient(90deg, #ffffff 70%, #e7f6fa 100%)', // subtle blue tint at the end
+    background: 'linear-gradient(90deg, #ffffff 70%, #e7f6fa 100%)',
     padding: '15px 30px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottom: '1px solid #e0e0e0',
-    boxShadow: '0 4px 16px rgba(0,124,138,0.05)', // a bit more shadow, with a blue tint
+    boxShadow: '0 4px 16px rgba(0,124,138,0.05)',
     flexWrap: 'wrap',
     position: 'sticky',
     top: 0,
@@ -36,8 +34,6 @@ const navStyles = {
   },
   brandLink: {
     textDecoration: 'none',
-    color: '#0A2E36',
-    // fontWeight: 'bold',
     fontSize: '1.8em',
     fontFamily: 'Montserrat',
     position: 'relative',
@@ -62,11 +58,11 @@ const navStyles = {
     borderRadius: '4px',
     transition: 'background-color 0.2s ease, color 0.2s ease',
     fontSize: '1em',
-    backgroundColor: 'transparent', // Default transparent
+    backgroundColor: 'transparent',
     fontFamily: 'Montserrat',
   },
   activeLink: {
-    backgroundColor: '#007C8A', // Blue background when active
+    backgroundColor: '#007C8A',
     color: 'white',
   },
   authButton: {
@@ -81,10 +77,6 @@ const navStyles = {
     transition: 'background-color 0.2s ease, color 0.2s ease',
     marginLeft: '10px',
   },
-  authButtonHover: {
-    backgroundColor: '#007C8A',
-    color: 'white',
-  }
 };
 
 function PageTracker() {
@@ -102,12 +94,13 @@ export default function App() {
 }
 
 function AppLayout() {
-  const { currentUser, logout, currentUserProfile, loadingAuth } = useAuth(); // Added loadingAuth
+  const { currentUser, logout, currentUserProfile, loadingAuth } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
       await logout();
-      // Navigation after logout is handled by ProtectedRoute redirecting from protected pages
+      navigate("/login", { replace: true }); 
     } catch (error) {
       console.error("Failed to log out", error);
       alert("Logout failed. Please try again.");
@@ -118,8 +111,6 @@ function AppLayout() {
     ? `${currentUserProfile.displayName}'s Profile`
     : "My Profile";
 
-  // Display a loading indicator while auth state is being determined
-  // This prevents flickering or incorrect redirects on initial load
   if (loadingAuth) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -131,7 +122,7 @@ function AppLayout() {
   return (
     <>
       <nav style={navStyles.nav}>
-        <RouterLink to="/" style={navStyles.brandLink}>
+        <RouterLink to="/landing" style={navStyles.brandLink}>
           nGoDONATE
         </RouterLink>
 
@@ -139,47 +130,38 @@ function AppLayout() {
           {currentUser ? (
             <>
               <NavLink
-                to="/userprofile" // <<<< CHANGED: Link to /userprofile
+                to="/userprofile"
                 style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
+                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
                 }
               >
                 {profileName}
               </NavLink>
+
               <NavLink
-                to="/nftPage" // Assuming this is a public gallery page
+                to="/projects"
                 style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
+                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
                 }
               >
-                NFT Gallery
+                Projects Gallery
               </NavLink>
-              {/* Optional: Link to create project if user is logged in */}
-              {/* <NavLink
-                to="/createproject"
-                style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
-                }
-              >
-                Create Project
-              </NavLink> */}
+
+              {currentUserProfile?.userType === "nonprofit" && (
+                <NavLink
+                  to="/createproject"
+                  style={({ isActive }) =>
+                    isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
+                  }
+                >
+                  Create Project
+                </NavLink>
+              )}
+
               <button
                 onClick={handleLogout}
                 style={navStyles.authButton}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = navStyles.authButtonHover.backgroundColor;
-                  e.currentTarget.style.color = navStyles.authButtonHover.color;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = navStyles.authButton.color;
-                }}
+                className="logout-btn"
               >
                 Logout
               </button>
@@ -189,9 +171,7 @@ function AppLayout() {
               <NavLink
                 to="/login"
                 style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
+                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
                 }
               >
                 Login
@@ -199,9 +179,7 @@ function AppLayout() {
               <NavLink
                 to="/signup"
                 style={({ isActive }) =>
-                  isActive
-                    ? { ...navStyles.link, ...navStyles.activeLink }
-                    : navStyles.link
+                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
                 }
               >
                 Register
@@ -212,7 +190,7 @@ function AppLayout() {
       </nav>
 
       <Routes>
-        {/* Default Route Logic */}
+        {/* Default Route */}
         <Route
           path="/"
           element={
@@ -222,30 +200,24 @@ function AppLayout() {
 
         {/* Public Routes */}
         <Route path="/landing" element={<HomePage />} />
-        <Route path="/nftPage" element={<MintNFTPage />} /> {/* Assuming public */}
-        <Route path="/projects/:projectId" element={<ProjectDisplayPage />} /> {/* Publicly viewable project details */}
+        <Route path="/nft" element={<MintNFTPage />} />
+        <Route path="/projects" element={<ProjectsGallery />} />
+        <Route path="/projects/:projectId" element={<ProjectDisplayPage />} />
 
-        {/* Routes only for Unauthenticated Users (e.g., login, signup) */}
+        {/* Routes only for Unauthenticated Users */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<UserLoginPage />} />
         </Route>
 
-        {/* Protected Routes (Require Authentication) */}
+        {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/userprofile" element={<UserProfile />} />
           <Route path="/createproject" element={<CharityProjectForm />} />
           <Route path="/donate/project/:projectId" element={<ProjectDonationPage />} />
-          {/* Add other authenticated user routes here */}
         </Route>
 
-        {/* Admin Route - Ensure currentUser check and ADMIN_UID comparison is robust */}
-        {/* This specific admin route structure might need more thought for larger admin sections */}
-        {/* You might want a dedicated /admin/login for admin users or a role-based system */}
-        {/* <Route path="/admin/login" element={<AdminLoginPage />} /> */}
-
-
-        {/* Catch-all for undefined routes - redirects to the smart default route */}
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>

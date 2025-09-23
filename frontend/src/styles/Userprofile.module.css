@@ -1,0 +1,319 @@
+/* UserProfile.module.css */
+
+.userProfileContainer {
+  max-width: 100%;
+  margin: 2rem 0;
+  padding: 2rem 3rem;
+  border-radius: 12px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  background: #fefefe;
+}
+
+.contentWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Left column: Profile */
+.profileSection {
+  flex: 0 0 100%; /* smaller width */
+  /* max-width: 300px; */
+  background: #ffffff;
+  padding: 1.2rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+/* Right column: Transactions */
+.transactionsSection {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  width: 98%;
+  /* remove vertical scroll */
+  max-height: none;
+  overflow-y: visible;
+
+  /* enable horizontal scrolling */
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.titleContainer {
+  margin-bottom: 1.2rem;
+  border-bottom: 3px solid #007C8A;
+  padding-bottom: 0.35rem;
+}
+
+.profileTitle,
+.transactionsTitle {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.profileInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.infoItem {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+  font-size: 1.05rem;
+  color: #34495e;
+}
+
+.infoLabel {
+  min-width: 130px;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.infoValue {
+  font-size: 1rem;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+.addressToggleButton {
+  margin-left: 1rem;
+  background: none;
+  border: none;
+  color: #007C8A;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.25s ease;
+  padding: 0;
+}
+
+.addressToggleButton:hover {
+  color: #357abd;
+  text-decoration: underline;
+}
+
+.editButton,
+.saveButton,
+.cancelButton {
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  padding: 0.5rem 1.4rem;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  box-shadow: 0 3px 6px rgba(74, 144, 226, 0.3);
+}
+
+.editButton {
+  background-color: #007C8A;
+  color: white;
+  align-self: flex-start;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.1);
+}
+
+.editButton:hover {
+  background-color: #357abd;
+  box-shadow: 0 6px 18px rgba(53, 122, 189, 0.5);
+}
+
+.saveButton {
+  background-color: #28a745;
+  color: white;
+  margin-right: 1rem;
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.saveButton:hover {
+  background-color: #218838;
+  box-shadow: 0 6px 18px rgba(33, 136, 56, 0.5);
+}
+
+.cancelButton {
+  background-color: #dc3545;
+  color: white;
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+}
+
+.cancelButton:hover {
+  background-color: #c82333;
+  box-shadow: 0 6px 18px rgba(200, 35, 51, 0.5);
+}
+
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.3rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup label {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 1rem;
+}
+
+.formGroup input[type="text"] {
+  padding: 0.55rem 0.85rem;
+  border: 1.8px solid #b0c4de;
+  border-radius: 6px;
+  font-size: 1.05rem;
+  transition: border-color 0.3s ease;
+  color: #2c3e50;
+  background: #f8faff;
+}
+
+.formGroup input[type="text"]:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 8px rgba(74, 144, 226, 0.3);
+  background: #fff;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 1.3rem;
+}
+
+/* Transactions list horizontal */
+.transactionsList {
+  display: flex;
+  flex-direction: row; /* horizontal direction */
+  flex-wrap: wrap;     /* allow items to wrap into next line */
+  gap: 16px;           /* space between items horizontally and vertically */
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+
+/* Each transaction card */
+.transactionItem {
+  display: inline-block;
+  min-width: 280px;
+  max-width: 300px;
+  background: #fdfdfd;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.transactionItem p {
+  margin: 6px 0;
+  text-wrap: wrap;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.transactionItem a {
+  color: #007C8A;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.transactionItem a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contentWrapper {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .profileSection,
+  .transactionsSection {
+    flex: none;
+    max-width: 100%;
+    padding: 1.6rem 1.8rem;
+  }
+}
+
+/* Background colors */
+body,
+.userProfileContainer {
+  background-color: #f8f9fa;
+  color: #2c3e50;
+}
+
+.card,
+.profileSection,
+.transactionsSection {
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+.header,
+.sidebar {
+  background-color: #343a40;
+  color: #ffffff;
+}
+
+/* Text colors */
+h1,
+h2,
+h3,
+.profileTitle,
+.transactionsTitle {
+  color: #2c3e50;
+}
+
+.navLink {
+  color: #495057;
+}
+
+.navLink:hover {
+  color: #007C8A;
+  background-color: #e9ecef;
+}
+
+.activeNavLink {
+  background-color: #FF9800 !important;
+  color: #ffffff !important;
+}
+
+/* Buttons */
+.logoutButton {
+  background-color: #dc3545;
+  color: white;
+}
+
+.logoutButton:hover {
+  background-color: #c82333;
+}
+
+/* Scrollbar styling for horizontal scroll */
+.transactionsSection::-webkit-scrollbar {
+  height: 8px;
+}
+.transactionsSection::-webkit-scrollbar-track {
+  background: #e1eaff;
+  border-radius: 10px;
+}
+.transactionsSection::-webkit-scrollbar-thumb {
+  background-color: #4a90e2;
+  border-radius: 10px;
+  border: 2px solid #e1eaff;
+}

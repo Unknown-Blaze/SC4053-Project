@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import classes from './AdminLoginPage.module.css'; // Reuse styles
+import classes from '../styles/AdminLoginPage.module.css'; // Reuse styles
 
 const UserLoginPage = () => {
   const [email, setEmail] = useState('');
