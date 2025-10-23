@@ -90,8 +90,8 @@ const ProjectDonationPage = () => {
       setDonationStatus('error');
       return;
     }
-    if (!project?.recipientAddress) {
-      setErrorMessage("This project does not have a valid recipient address configured.");
+    if (!project?.eth_wallet_address) {
+      setErrorMessage("This project does not have a valid recipient wallet address configured.");
       setDonationStatus('error');
       return;
     }
@@ -122,7 +122,7 @@ const ProjectDonationPage = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           donor_address: currentUserProfile.walletAddress,
-          recipient_address: project.recipientAddress,
+          recipient_address: project.eth_wallet_address,
           milestones: [milestone],
         }),
       });
