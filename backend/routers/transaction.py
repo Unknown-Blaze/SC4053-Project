@@ -1,5 +1,3 @@
-# routers/transaction.py
-
 from fastapi import APIRouter, HTTPException
 from services.eth_client import w3
 from constants import NGO_WALLET_ADDRESS
@@ -10,70 +8,81 @@ router = APIRouter()
 
 # Get the Etherscan API key from environment variables
 ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
-# We will use the Sepolia testnet API endpoint
-ETHERSCAN_API_URL = "https://api-sepolia.etherscan.io/api"
+
+# Updated: Sepolia v2 Etherscan endpoint
+ETHERSCAN_API_URL = "https://api.etherscan.io/v2/api"
 
 @router.get("/latest-transactions")
 def get_latest_transactions(address: str = NGO_WALLET_ADDRESS):
     """
     Fetches the latest 10 transactions for a given Ethereum address
-    using the Etherscan API.
+    using the Etherscan Sepolia v2 API.
     """
-    # --- 1. Input Validation ---
-    # Check if the provided address is a valid Ethereum checksum address.
+
+    # --- 1. Validate Address ---
     if not w3.is_checksum_address(address):
-        # If not, try to convert it. This handles cases where the address has no checksum (e.g., all lowercase).
         try:
             address = w3.to_checksum_address(address)
-        # If conversion fails, it's not a valid Ethereum address.
         except Exception:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid Ethereum address provided: {address}. Address must be a valid 42-character hex string."
+                detail=f"Invalid Ethereum address provided: {address}. Must be a valid 42-character hex string."
             )
 
+    # --- 2. Validate API Key ---
     if not ETHERSCAN_API_KEY:
         raise HTTPException(status_code=500, detail="Etherscan API key is not configured on the server.")
 
-    # --- 2. API Call to Etherscan ---
+    # --- 3. Prepare API Call Parameters ---
     params = {
+        "chainid": 11155111,  # Sepolia Testnet chain ID
         "module": "account",
         "action": "txlist",
         "address": address,
         "startblock": 0,
         "endblock": 99999999,
         "page": 1,
-        "offset": 10,  # We only want the 10 latest transactions
-        "sort": "desc", # Sort by descending to get the latest first
+        "offset": 10,  # Fetch the latest 10 transactions
+        "sort": "desc",
         "apikey": ETHERSCAN_API_KEY,
     }
 
+    # --- 4. Call Etherscan API ---
     try:
         response = requests.get(ETHERSCAN_API_URL, params=params)
-        response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
+        response.raise_for_status()
         data = response.json()
 
-        if data["status"] == "1":
-            # --- 3. Format the Response ---
+        # v2 API may return data under "data" or "result"
+        result = data.get("result") or data.get("data", [])
+
+        # --- 5. Format Successful Response ---
+        if data.get("status") == "1" or isinstance(result, list):
             formatted_transactions = []
-            for tx in data["result"]:
+            for tx in result:
                 formatted_transactions.append({
                     'hash': tx.get('hash'),
                     'from': tx.get('from'),
                     'to': tx.get('to'),
-                    # Convert the value from Wei (the smallest unit) to Ether
                     'value_ether': w3.from_wei(int(tx.get('value', 0)), 'ether'),
                     'blockNumber': tx.get('blockNumber'),
                     'timeStamp': tx.get('timeStamp')
                 })
             return {"transactions": formatted_transactions}
-        elif data["status"] == "0" and data["message"] == "No transactions found":
+
+        # --- 6. Handle No Transactions ---
+        elif data.get("status") == "0" and "No transactions" in data.get("message", ""):
             return {"transactions": []}
+
+        # --- 7. Handle API Error ---
         else:
-            # Handle other Etherscan API errors
-            raise HTTPException(status_code=500, detail=f"Etherscan API error: {data.get('message')} - {data.get('result')}")
+            raise HTTPException(
+                status_code=500,
+                detail=f"Etherscan API error: {data.get('message')} - {data.get('result')}"
+            )
 
     except requests.exceptions.RequestException as e:
         raise HTTPException(status_code=503, detail=f"Could not connect to Etherscan API: {e}")
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

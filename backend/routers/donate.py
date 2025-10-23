@@ -6,12 +6,12 @@ from typing import List
 from datetime import datetime
 import time
 from services.eth_client import w3
-import json  # <-- Import json
-import os    # <-- Import os
+import json
+import os
 
 router = APIRouter()
 
-# --- Pydantic Models (No Changes) ---
+# --- (Models and load_contract_data are correct) ---
 class Milestone(BaseModel):
     task: str
     amount: float
@@ -26,26 +26,34 @@ class PrepareEscrowActionRequest(BaseModel):
     donor_address: str
     escrow_contract_address: str
 
-# --- FINAL, CORRECT function to load pre-compiled contract data from Hardhat ---
 def load_contract_data(file_name: str, contract_name: str):
-    """
-    Loads contract ABI and bytecode from Hardhat's artifacts.
-    :param file_name: The name of the .sol file (e.g., "Escrow")
-    :param contract_name: The name of the contract inside the file (e.g., "Escrow")
-    """
     current_dir = os.path.dirname(os.path.realpath(__file__))
     artifacts_path = os.path.join(
         os.path.dirname(current_dir), "artifacts", "contracts", f"{file_name}.sol", f"{contract_name}.json"
     )
-    
     with open(artifacts_path, 'r') as f:
         data = json.load(f)
     return data['abi'], data['bytecode']
 
-# --- Load the pre-compiled contract data on startup ---
 ESCROW_ABI, ESCROW_BYTECODE = load_contract_data('Escrow', 'Escrow')
 
-# --- All your endpoints below this line are correct and need no changes ---
+
+# --- Helper function to convert tx for ethers.js ---
+def convert_tx_for_ethers(tx):
+    """Converts a web3.py tx dict to an ethers.js v6 compatible dict."""
+    ethers_tx = {
+        "from": tx["from"],
+        "to": tx.get("to") if tx.get("to") else None,
+        "value": hex(tx.get("value", 0)), # Use 0 if value is missing
+        "nonce": hex(tx["nonce"]),
+        "gasLimit": hex(tx["gas"]), # Rename 'gas'
+        "gasPrice": hex(tx["gasPrice"]),
+        "data": tx["data"]
+    }
+    if "chainId" in tx:
+        ethers_tx["chainId"] = hex(tx["chainId"])
+    return ethers_tx
+
 
 @router.post("/prepare_donation")
 def prepare_donation(request: PrepareDonationRequest):
@@ -59,22 +67,30 @@ def prepare_donation(request: PrepareDonationRequest):
                 raise ValueError("Milestone time must be in the future.")
 
             Escrow = w3.eth.contract(abi=ESCROW_ABI, bytecode=ESCROW_BYTECODE)
+            
             tx = Escrow.constructor(
                 w3.to_checksum_address(request.recipient_address),
                 unlock_timestamp
             ).build_transaction({
                 'from': w3.to_checksum_address(request.donor_address),
-                'value': str(w3.to_wei(milestone.amount, 'ether')),
+                'value': w3.to_wei(milestone.amount, 'ether'),
                 'nonce': current_nonce,
                 'gas': 2000000,
                 'gasPrice': w3.eth.gas_price
             })
-            unsigned_transactions.append(tx)
+            
+            # Convert and append
+            ethers_tx = convert_tx_for_ethers(tx)
+            unsigned_transactions.append(ethers_tx)
+            
             current_nonce += 1
-
+        
+        print(f"Sending to frontend: {unsigned_transactions}")
         return {"unsigned_transactions": unsigned_transactions}
     except Exception as e:
+        print(f"Error in /prepare_donation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/prepare_release_escrow")
 def prepare_release_escrow(request: PrepareEscrowActionRequest):
@@ -85,10 +101,18 @@ def prepare_release_escrow(request: PrepareEscrowActionRequest):
             'nonce': w3.eth.get_transaction_count(w3.to_checksum_address(request.donor_address)),
             'gas': 100000,
             'gasPrice': w3.eth.gas_price
+            # 'value' is 0 for this call, which is fine
         })
-        return {"unsigned_transaction": tx}
+        
+        # --- FIX ---
+        # Convert the transaction before returning
+        ethers_tx = convert_tx_for_ethers(tx)
+        return {"unsigned_transaction": ethers_tx}
+        # --- END FIX ---
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/prepare_cancel_escrow")
 def prepare_cancel_escrow(request: PrepareEscrowActionRequest):
@@ -100,6 +124,12 @@ def prepare_cancel_escrow(request: PrepareEscrowActionRequest):
             'gas': 100000,
             'gasPrice': w3.eth.gas_price
         })
-        return {"unsigned_transaction": tx}
+
+        # --- FIX ---
+        # Convert the transaction before returning
+        ethers_tx = convert_tx_for_ethers(tx)
+        return {"unsigned_transaction": ethers_tx}
+        # --- END FIX ---
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
