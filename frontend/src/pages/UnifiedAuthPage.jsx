@@ -145,10 +145,13 @@ const UnifiedAuthPage = () => {
       return setError("Passwords do not match.");
     }
 
-    let nameToRegister = displayName;
-    let additionalData = { walletAddress };
+    let nameToRegister;
+    let additionalData = { 
+      walletAddress,
+      userType: userType // Include userType in additionalData
+    };
 
-    if (userType === 'ngo') {
+    if (userType === 'nonprofit') {
       if (!organizationName) { 
         setLoading(false); 
         handleStepChange(''); 
@@ -164,7 +167,8 @@ const UnifiedAuthPage = () => {
         handleStepChange(''); 
         return setError("Organization Type is required."); 
       }
-      nameToRegister = contactPersonName;
+      // For NGOs, use organization name as the display name
+      nameToRegister = organizationName;
       additionalData = { 
         ...additionalData, 
         organizationName, 
@@ -173,6 +177,9 @@ const UnifiedAuthPage = () => {
         registrationNumber, 
         description 
       };
+    } else {
+      // For donors, use personal name
+      nameToRegister = displayName;
     }
 
     try {
@@ -637,18 +644,18 @@ const UnifiedAuthPage = () => {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUserType('ngo')}
+                    onClick={() => setUserType('nonprofit')}
                     style={{
                       flex: 1,
                       padding: '0.75rem 1rem',
                       borderRadius: '8px',
                       border: 'none',
-                      background: userType === 'ngo' ? 'white' : 'transparent',
-                      color: userType === 'ngo' ? '#374151' : '#6b7280',
-                      fontWeight: userType === 'ngo' ? '600' : '500',
+                      background: userType === 'nonprofit' ? 'white' : 'transparent',
+                      color: userType === 'nonprofit' ? '#374151' : '#6b7280',
+                      fontWeight: userType === 'nonprofit' ? '600' : '500',
                       cursor: 'pointer',
                       transition: 'all 0.2s',
-                      boxShadow: userType === 'ngo' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                      boxShadow: userType === 'nonprofit' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -661,155 +668,157 @@ const UnifiedAuthPage = () => {
                 </div>
                 
                 <form onSubmit={handleSignup} style={{ display: 'grid', gap: '1.5rem' }}>
-                  {/* Basic Information */}
-                  <div style={{
-                    background: '#f8fafc',
-                    borderRadius: '15px',
-                    padding: '1.5rem',
-                    border: '2px solid #e2e8f0'
-                  }}>
-                    <h3 style={{ 
-                      fontSize: '1.1rem', 
-                      fontWeight: '600', 
-                      color: '#374151',
-                      marginBottom: '1rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
+                  {/* Donor Information */}
+                  {userType === 'donor' && (
+                    <div style={{
+                      background: '#f8fafc',
+                      borderRadius: '15px',
+                      padding: '1.5rem',
+                      border: '2px solid #e2e8f0'
                     }}>
-                      <FiUser style={{ width: '20px', height: '20px', color: '#3b82f6' }} />
-                      Basic Information
-                    </h3>
-                    
-                    <div style={{ display: 'grid', gap: '1rem' }}>
-                      <div>
-                        <label style={{ 
-                          display: 'block', 
-                          fontWeight: '500', 
-                          color: '#374151',
-                          marginBottom: '0.5rem',
-                          fontSize: '0.95rem'
-                        }}>
-                          <FiMail style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          required
-                          placeholder="Enter your email"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s',
-                            outline: 'none'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                        />
-                      </div>
+                      <h3 style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '600', 
+                        color: '#374151',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <FiUser style={{ width: '20px', height: '20px', color: '#3b82f6' }} />
+                        Personal Information
+                      </h3>
                       
-                      <div>
-                        <label style={{ 
-                          display: 'block', 
-                          fontWeight: '500', 
-                          color: '#374151',
-                          marginBottom: '0.5rem',
-                          fontSize: '0.95rem'
-                        }}>
-                          <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
-                          Password
-                        </label>
-                        <input
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          required
-                          placeholder="Create a password"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s',
-                            outline: 'none'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                        />
-                      </div>
-                      
-                      <div>
-                        <label style={{ 
-                          display: 'block', 
-                          fontWeight: '500', 
-                          color: '#374151',
-                          marginBottom: '0.5rem',
-                          fontSize: '0.95rem'
-                        }}>
-                          <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
-                          Confirm Password
-                        </label>
-                        <input
-                          type="password"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          required
-                          placeholder="Confirm your password"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s',
-                            outline: 'none'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                        />
-                      </div>
-                      
-                      <div>
-                        <label style={{ 
-                          display: 'block', 
-                          fontWeight: '500', 
-                          color: '#374151',
-                          marginBottom: '0.5rem',
-                          fontSize: '0.95rem'
-                        }}>
-                          <FiUser style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          required
-                          placeholder="Enter your full name"
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem',
-                            border: '2px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '1rem',
-                            transition: 'all 0.2s',
-                            outline: 'none'
-                          }}
-                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                        />
+                      <div style={{ display: 'grid', gap: '1rem' }}>
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiMail style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="Enter your email"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            placeholder="Create a password"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Confirm Password
+                          </label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            placeholder="Confirm your password"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiUser style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={displayName}
+                            onChange={(e) => setDisplayName(e.target.value)}
+                            required
+                            placeholder="Enter your full name"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* NGO Information */}
-                  {userType === 'ngo' && (
+                  {userType === 'nonprofit' && (
                     <div style={{
                       background: '#f8fafc',
                       borderRadius: '15px',
@@ -830,6 +839,99 @@ const UnifiedAuthPage = () => {
                       </h3>
                       
                       <div style={{ display: 'grid', gap: '1rem' }}>
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiMail style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Organization Email Address
+                          </label>
+                          <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            placeholder="Enter organization email"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Organization Password
+                          </label>
+                          <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            placeholder="Create organization password"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                            Confirm Organization Password
+                          </label>
+                          <input
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            placeholder="Confirm organization password"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
                         <div>
                           <label style={{ 
                             display: 'block', 

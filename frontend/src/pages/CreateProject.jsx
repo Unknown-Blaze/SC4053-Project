@@ -102,8 +102,6 @@ function CharityProjectForm() {
     }
 
     try {
-      onStepChange("Creating smart contract...");
-      
       // Prepare milestone data for backend
       const milestoneData = milestones.map(({ name, description, amount }) => ({
         name,
@@ -111,33 +109,9 @@ function CharityProjectForm() {
         amount: parseFloat(amount),
       }));
 
-      // Call backend to create project and deploy contract
-      const response = await fetch('http://127.0.0.1:8000/projects/create-project', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          description,
-          contact_email: contactEmail,
-          eth_wallet_address: ethWalletAddress,
-          milestones: milestoneData,
-          ngoName: ngoName,
-          verifier_address: ethWalletAddress // Using NGO wallet as verifier for now
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Failed to create project');
-      }
-
-      const projectData = await response.json();
+      onStepChange("Creating project...");
       
-      onStepChange("Saving project to database...");
-      
-      // Save project data to Firestore with contract information
+      // Save project data to Firestore
       const docRef = await addDoc(collection(db, "charity_projects"), {
         name,
         description,
@@ -145,17 +119,13 @@ function CharityProjectForm() {
         eth_wallet_address: ethWalletAddress,
         milestones: milestoneData,
         ngoName: ngoName,
-        // New contract-related fields
-        project_id: projectData.project_id,
-        contract_address: projectData.contract_address,
-        transaction_hash: projectData.transaction_hash,
-        total_amount_eth: projectData.total_amount_eth,
-        milestone_count: projectData.milestone_count,
-        status: projectData.status,
+        total_amount_eth: milestoneData.reduce((sum, m) => sum + m.amount, 0),
+        milestone_count: milestoneData.length,
+        status: "pending",
         created_at: new Date().toISOString()
       });
 
-      setSuccess(`Project created successfully! Contract deployed at: ${projectData.contract_address}`);
+      setSuccess("Project created successfully! Your project is now under review.");
 
       // Clear form (but keep auto-filled fields)
       setName("");
@@ -216,41 +186,6 @@ function CharityProjectForm() {
           border: '1px solid rgba(255,255,255,0.2)'
         }}>
           <form onSubmit={handleSubmit}>
-            {/* Error/Success Messages */}
-            {error && (
-              <div style={{
-                background: '#fee2e2',
-                border: '1px solid #fecaca',
-                color: '#dc2626',
-                padding: '1rem',
-                borderRadius: '10px',
-                marginBottom: '1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <div style={{ width: '20px', height: '20px', background: '#dc2626', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px' }}>!</div>
-                {error}
-              </div>
-            )}
-
-            {stepMessage && (
-              <div style={{
-                background: '#dbeafe',
-                border: '1px solid #93c5fd',
-                color: '#1d4ed8',
-                padding: '1rem',
-                borderRadius: '10px',
-                marginBottom: '1.5rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <div style={{ width: '20px', height: '20px', background: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px' }}>⏳</div>
-                {stepMessage}
-              </div>
-            )}
-            
 
             {/* Project Details Section */}
             <div style={{ marginBottom: '2rem' }}>
@@ -737,6 +672,48 @@ function CharityProjectForm() {
                 Submit Project for Review
               </button>
               
+              {/* Error Message - Positioned below submit button */}
+              {error && (
+                <div style={{
+                  marginTop: '1.5rem',
+                  background: '#fee2e2',
+                  border: '1px solid #fecaca',
+                  color: '#dc2626',
+                  padding: '1rem',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  maxWidth: '500px',
+                  margin: '1.5rem auto 0'
+                }}>
+                  <div style={{ width: '20px', height: '20px', background: '#dc2626', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px' }}>!</div>
+                  {error}
+                </div>
+              )}
+
+              {/* Step Message - Positioned below submit button */}
+              {stepMessage && (
+                <div style={{
+                  marginTop: '1.5rem',
+                  background: '#dbeafe',
+                  border: '1px solid #93c5fd',
+                  color: '#1d4ed8',
+                  padding: '1rem',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  maxWidth: '500px',
+                  margin: '1.5rem auto 0'
+                }}>
+                  <div style={{ width: '20px', height: '20px', background: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '12px' }}>⏳</div>
+                  {stepMessage}
+                </div>
+              )}
+
               {/* Success Message - Positioned below submit button */}
               {success && (
                 <div style={{
