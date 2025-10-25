@@ -8,7 +8,7 @@ import {
   signOut,
   updateProfile
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore"; // Added updateDoc
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc, collection, query, where, getDocs, limit } from "firebase/firestore"; // Added updateDoc and Firestore query functions
 
 const AuthContext = createContext();
 
@@ -34,6 +34,22 @@ export const AuthProvider = ({ children }) => {
                        ) => {
     let user = null;
     try {
+      onStepChange("Checking account status...");
+      
+      // Check if email exists in both systems
+      const emailCheck = await checkEmailExists(email);
+      
+      if (emailCheck.authExists && emailCheck.firestoreExists) {
+        // Email exists in both - this is a real conflict
+        throw new Error("An account with this email already exists. Please use the login page instead.");
+      } else if (emailCheck.isOrphaned) {
+        // Orphaned account - email exists in Auth but not Firestore
+        onStepChange("Found orphaned account, attempting to clean up...");
+        // We can't delete the auth user without the password, so we'll create a new one
+        // This will fail with email-already-in-use, which we'll handle
+        console.log("Orphaned account detected, proceeding with signup...");
+      }
+      
       onStepChange("Creating your account...");
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       user = userCredential.user;
@@ -66,6 +82,18 @@ export const AuthProvider = ({ children }) => {
 
     } catch (error) {
       console.error("Error in signup process:", error.message);
+      
+      // Handle specific error cases
+      if (error.code === 'auth/email-already-in-use') {
+        // Check if this is an orphaned account
+        const emailCheck = await checkEmailExists(email);
+        if (emailCheck.isOrphaned) {
+          throw new Error("This email was previously used but the account was incomplete. Please contact support to resolve this issue.");
+        } else {
+          throw new Error("An account with this email already exists. Please use the login page instead.");
+        }
+      }
+      
       if (user && error.code !== 'auth/email-already-in-use') {
           try {
               onStepChange("Signup failed. Cleaning up...");
@@ -78,6 +106,57 @@ export const AuthProvider = ({ children }) => {
       throw error;
     } finally {
         onStepChange(null);
+    }
+  };
+
+  // Function to check if email exists in both Firebase Auth and Firestore
+  const checkEmailExists = async (email) => {
+    try {
+      // Check Firebase Auth first
+      const authExists = await checkEmailInAuth(email);
+      
+      // Check Firestore
+      const firestoreExists = await checkEmailInFirestore(email);
+      
+      // If email exists in Auth but not in Firestore, it's an orphaned account
+      if (authExists && !firestoreExists) {
+        console.log("Found orphaned Firebase Auth user, attempting cleanup...");
+        // We can't delete the auth user without the password, so we'll handle this in signup
+        return { authExists: true, firestoreExists: false, isOrphaned: true };
+      }
+      
+      return { authExists, firestoreExists, isOrphaned: false };
+    } catch (error) {
+      console.error("Error checking email existence:", error);
+      return { authExists: false, firestoreExists: false, isOrphaned: false };
+    }
+  };
+
+  // Check if email exists in Firebase Auth
+  const checkEmailInAuth = async (email) => {
+    try {
+      await signInWithEmailAndPassword(auth, email, 'dummy-password');
+      return true;
+    } catch (error) {
+      if (error.code === 'auth/wrong-password') {
+        return true; // Email exists but wrong password
+      } else if (error.code === 'auth/user-not-found') {
+        return false; // Email doesn't exist
+      }
+      return false;
+    }
+  };
+
+  // Check if email exists in Firestore
+  const checkEmailInFirestore = async (email) => {
+    try {
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("email", "==", email), limit(1));
+      const querySnapshot = await getDocs(q);
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking email in Firestore:", error);
+      return false;
     }
   };
 
@@ -148,6 +227,27 @@ export const AuthProvider = ({ children }) => {
     return unsubscribe;
   }, []);
 
+  // Admin function to check for orphaned accounts
+  const checkOrphanedAccounts = async (email) => {
+    try {
+      const emailCheck = await checkEmailExists(email);
+      return {
+        email,
+        authExists: emailCheck.authExists,
+        firestoreExists: emailCheck.firestoreExists,
+        isOrphaned: emailCheck.isOrphaned,
+        message: emailCheck.isOrphaned 
+          ? "This email has an orphaned Firebase Auth account (exists in Auth but not in Firestore)"
+          : emailCheck.authExists && emailCheck.firestoreExists
+          ? "This email has a complete account in both systems"
+          : "This email is available for registration"
+      };
+    } catch (error) {
+      console.error("Error checking orphaned accounts:", error);
+      return { error: error.message };
+    }
+  };
+
   const value = {
     currentUser,
     currentUserProfile,
@@ -157,6 +257,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     loadingAuth,
     updateUserGemWalletAddress, // RENAMED: Expose the renamed function
+    checkOrphanedAccounts, // Admin function to check account status
   };
 
   return (

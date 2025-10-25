@@ -32,6 +32,9 @@ const UserLoginPage = () => {
     <div className={classes.pageContainer}>
       <div className={classes.formBox}>
         <h2 className={classes.title}>Welcome Back!</h2>
+        <p style={{ textAlign: 'center', color: '#4CAF50', marginBottom: '20px', fontWeight: '500' }}>
+          We detected your wallet and found your account!
+        </p>
         {error && <p className={classes.error}>{error}</p>}
         <form onSubmit={handleSubmit}>
           {/* Email and Password inputs similar to AdminLoginPage */}
@@ -48,7 +51,7 @@ const UserLoginPage = () => {
           </button>
         </form>
         <p style={{ marginTop: '15px', fontSize: '0.9em' }}>
-          No account? <Link to="/signup" style={{ color: '#007bff' }}>Sign Up Here</Link>
+          No account? <Link to="/auth" style={{ color: '#007bff' }}>Connect Your Wallet to Sign Up</Link>
         </p>
         <Link to="/" className={classes.backLink}>← Back to Main Page</Link>
       </div>

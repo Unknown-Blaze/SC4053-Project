@@ -332,7 +332,7 @@ const LandingPage = () => {
             Experience the future of charitable giving. nGoDONATE connects you directly to causes, powered by Ethereum for secure, transparent, and accountable donations.
           </p>
           <div style={styles.heroButtonsContainer}>
-            <a href="/login" style={{...styles.ctaButtonBase, ...styles.ctaButtonPrimary, ...(hoverStates.demo ? styles.ctaButtonPrimaryHover : {})}}
+            <a href="/auth" style={{...styles.ctaButtonBase, ...styles.ctaButtonPrimary, ...(hoverStates.demo ? styles.ctaButtonPrimaryHover : {})}}
                onMouseEnter={() => handleMouseEnter('demo')} onMouseLeave={() => handleMouseLeave('demo')}>
               <FiPlayCircle /> Try it out!
             </a>

@@ -10,7 +10,7 @@ import solcx # <--- ADD THIS LINE
 solcx.set_solc_version('0.8.20')
 # ---------------------
 
-from routers import donate, nft, transaction, wallet
+from routers import donate, nft, transaction, wallet, projects
 
 app = FastAPI(
     title="Ethereum Wallet API",
@@ -31,3 +31,4 @@ app.include_router(wallet.router, prefix="/wallet", tags=["Ethereum Wallet"])
 app.include_router(transaction.router, prefix="/transaction", tags=["Ethereum Transactions"])
 app.include_router(donate.router, prefix="/donate", tags=["Ethereum Donations"])
 app.include_router(nft.router, prefix="/nft", tags=["Ethereum NFTs"])
+app.include_router(projects.router, prefix="/projects", tags=["Charity Projects"])

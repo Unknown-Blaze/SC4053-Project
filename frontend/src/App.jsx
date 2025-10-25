@@ -3,10 +3,14 @@ import React from 'react';
 import {BrowserRouter as Router,Routes,Route,Link as RouterLink,NavLink,Navigate,useNavigate} from 'react-router-dom';
 
 import { useAuth } from './contexts/AuthContext';
+import { SessionWalletAuthProvider } from './contexts/SessionWalletAuthContext';
 import HomePage from './pages/HomePage';
 import ProjectDonationPage from './pages/ProjectDonationPage';
 import UserLoginPage from './pages/UserLoginPage';
+import WalletLoginPage from './pages/WalletLoginPage';
 import SignupPage from './pages/SignUpPage';
+import UnifiedAuthPage from './pages/UnifiedAuthPage';
+import AdminDebugPage from './pages/AdminDebugPage';
 import { usePageTracking } from './utils/analytics';
 import MintNFTPage from './pages/MintNFT';
 import ProjectsGallery from './pages/ProjectsPage';
@@ -87,8 +91,10 @@ function PageTracker() {
 export default function App() {
   return (
     <Router>
-      <PageTracker />
-      <AppLayout />
+      <SessionWalletAuthProvider>
+        <PageTracker />
+        <AppLayout />
+      </SessionWalletAuthProvider>
     </Router>
   );
 }
@@ -100,7 +106,7 @@ function AppLayout() {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login", { replace: true }); 
+      navigate("/auth", { replace: true }); 
     } catch (error) {
       console.error("Failed to log out", error);
       alert("Logout failed. Please try again.");
@@ -169,20 +175,12 @@ function AppLayout() {
           ) : (
             <>
               <NavLink
-                to="/login"
+                to="/auth"
                 style={({ isActive }) =>
                   isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
                 }
               >
-                Login
-              </NavLink>
-              <NavLink
-                to="/signup"
-                style={({ isActive }) =>
-                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
-                }
-              >
-                Register
+                Sign In / Sign Up
               </NavLink>
             </>
           )}
@@ -203,11 +201,14 @@ function AppLayout() {
         <Route path="/nft" element={<MintNFTPage />} />
         <Route path="/projects" element={<ProjectsGallery />} />
         <Route path="/projects/:projectId" element={<ProjectDisplayPage />} />
+        <Route path="/admin-debug" element={<AdminDebugPage />} />
 
         {/* Routes only for Unauthenticated Users */}
         <Route element={<PublicOnlyRoute />}>
+          <Route path="/auth" element={<UnifiedAuthPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<UserLoginPage />} />
+          <Route path="/wallet-login" element={<WalletLoginPage />} />
         </Route>
 
         {/* Protected Routes */}
