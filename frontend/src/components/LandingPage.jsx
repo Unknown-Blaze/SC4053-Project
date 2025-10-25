@@ -324,15 +324,15 @@ const LandingPage = () => {
         <div style={styles.heroContentWrapper}>
           {/* Headline broken into parts */}
           <h1 style={{ marginBottom: styles.heroHeadlineMain.marginBottom }}> {/* Outer h1 for semantics */}
-            <span style={{...styles.heroHeadlineBase, ...styles.heroHeadlineMain}}>nGoDONATE:</span>
+            <span style={{...styles.heroHeadlineBase, ...styles.heroHeadlineMain}}>nGoDonate:</span>
             <span style={{...styles.heroHeadlineBase, ...styles.heroHeadlineSecondary}}>Amplify Your Impact.</span>
             <span style={{...styles.heroHeadlineBase, ...styles.heroHeadlineAccent}}>Transparently.</span>
           </h1>
           <p style={styles.heroSubheadline}>
-            Experience the future of charitable giving. nGoDONATE connects you directly to causes, powered by Ethereum for secure, transparent, and accountable donations.
+            Experience the future of charitable giving. nGoDonate connects you directly to causes, powered by Ethereum for secure, transparent, and accountable donations.
           </p>
           <div style={styles.heroButtonsContainer}>
-            <a href="/login" style={{...styles.ctaButtonBase, ...styles.ctaButtonPrimary, ...(hoverStates.demo ? styles.ctaButtonPrimaryHover : {})}}
+            <a href="/auth" style={{...styles.ctaButtonBase, ...styles.ctaButtonPrimary, ...(hoverStates.demo ? styles.ctaButtonPrimaryHover : {})}}
                onMouseEnter={() => handleMouseEnter('demo')} onMouseLeave={() => handleMouseLeave('demo')}>
               <FiPlayCircle /> Try it out!
             </a>
@@ -340,7 +340,7 @@ const LandingPage = () => {
         </div>
         <div style={styles.heroImageContainer}>
           <img src="/poor_people.jpg"
-               alt="nGoDONATE Platform Interface" style={styles.heroImage} />
+               alt="nGoDonate Platform Interface" style={styles.heroImage} />
         </div>
       </section>
 
@@ -359,7 +359,7 @@ const LandingPage = () => {
       <section id="learn-more" style={{ ...styles.contentSection, backgroundColor: '#FFFFFF'}}>
         <h2 style={styles.sectionHeading}>Project Overview<div style={styles.sectionHeadingAfter}></div></h2>
         <p style={styles.paragraph}>
-           nGoDONATE is a blockchain-powered platform that bridges NGOs and donors through transparency, trust and accountability. Built on Ethereum, it allows 
+           nGoDonate is a blockchain-powered platform that bridges NGOs and donors through transparency, trust and accountability. Built on Ethereum, it allows 
            NGOs to showcase their causes and progress, while donors can contribute seamlessly, track milestones and ensure funds are used responsibly - all with 
            real-time visibility.
         </p>
@@ -399,7 +399,7 @@ const LandingPage = () => {
         <div style={styles.footerTopRow}> {/* Container for brand and social links */}
             <div style={styles.footerBrand}>
                 <FiHelpCircle style={styles.footerBrandIcon} /> 
-                nGoDONATE
+                nGoDonate
             </div>
             <div style={styles.footerSocialLinks}>
                 <a href="#" style={styles.socialLink} 
@@ -419,7 +419,7 @@ const LandingPage = () => {
                 </a>
             </div>
         </div>
-        <p style={styles.footerCopyright}>© {new Date().getFullYear()} nGoDONATE. All Rights Reserved. </p>
+        <p style={styles.footerCopyright}>© {new Date().getFullYear()} nGoDonate. All Rights Reserved. </p>
       </footer>
     </div>
   );

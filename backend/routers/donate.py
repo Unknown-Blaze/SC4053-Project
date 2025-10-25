@@ -33,6 +33,7 @@ def load_contract_data(file_name: str, contract_name: str):
     )
     with open(artifacts_path, 'r') as f:
         data = json.load(f)
+    # Hardhat JSON structure has 'abi' and 'bytecode' directly
     return data['abi'], data['bytecode']
 
 ESCROW_ABI, ESCROW_BYTECODE = load_contract_data('Escrow', 'Escrow')

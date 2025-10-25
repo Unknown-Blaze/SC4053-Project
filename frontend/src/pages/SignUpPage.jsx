@@ -129,7 +129,12 @@ const SignupPage = () => {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        throw new Error(`This wallet address is already associated with an account.`);
+        // Instead of throwing error, redirect to login with wallet
+        setError(`This wallet address is already associated with an account. Please use the login page instead.`);
+        setTimeout(() => {
+          navigate('/auth');
+        }, 2000);
+        return;
       }
 
       // 5. Success! Set the address.
@@ -240,7 +245,7 @@ const SignupPage = () => {
   return (
     <div className={classes.pageContainer}>
       <div className={classes.formBox}>
-        <h2 className={classes.title}>Register for nGoDONATE</h2>
+        <h2 className={classes.title}>Register for nGoDonate</h2>
 
         {error && <p className={classes.error}><FiAlertCircle style={{ marginRight: '5px' }} />{error}</p>}
 
@@ -335,7 +340,7 @@ const SignupPage = () => {
 
         <div style={{ marginTop: '20px' }}>
           <p className={classes.linkText}>
-            Already have an account? <Link to="/login">Log In</Link>
+            Already have an account? <Link to="/auth">Connect Your Wallet to Log In</Link>
           </p>
           <Link to="/" className={classes.backLink}>← Back to Home</Link>
         </div>

@@ -12,8 +12,8 @@ export const ProtectedRoute = ({ children }) => {
   }
 
   if (!currentUser) {
-    // User not authenticated → send them to login
-    return <Navigate to="/login" replace />;
+    // User not authenticated → send them to unified auth
+    return <Navigate to="/auth" replace />;
   }
 
   // User is authenticated
