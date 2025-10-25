@@ -22,28 +22,29 @@ import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute';
 
 const navStyles = {
   nav: {
-    background: 'linear-gradient(90deg, #ffffff 70%, #e7f6fa 100%)',
+    background: 'linear-gradient(90deg, #ffffff 70%, #f8fafc 100%)',
     padding: '15px 30px',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    borderBottom: '1px solid #e0e0e0',
-    boxShadow: '0 4px 16px rgba(0,124,138,0.05)',
+    borderBottom: '1px solid #e5e7eb',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
     flexWrap: 'wrap',
     position: 'sticky',
     top: 0,
     zIndex: 1020,
     height: '70px',
-    fontFamily: "'Open Sans', sans-serif",
+    fontFamily: "'Raleway', sans-serif",
   },
   brandLink: {
     textDecoration: 'none',
     fontSize: '1.8em',
-    fontFamily: 'Montserrat',
+    fontFamily: "'Raleway', sans-serif",
+    fontWeight: '700',
     position: 'relative',
     display: 'inline-block',
-    transition: 'color 0.3s',
-    background: 'linear-gradient(90deg, #0A2E36, #007C8A, #0A2E36)',
+    transition: 'all 0.3s ease',
+    background: 'linear-gradient(135deg, #1f2937, #3b82f6, #1f2937)',
     backgroundSize: '200% 100%',
     backgroundClip: 'text',
     WebkitBackgroundClip: 'text',
@@ -56,30 +57,32 @@ const navStyles = {
   },
   link: {
     textDecoration: 'none',
-    color: '#333333',
+    color: '#374151',
     fontWeight: '500',
-    padding: '8px 15px',
-    borderRadius: '4px',
-    transition: 'background-color 0.2s ease, color 0.2s ease',
-    fontSize: '1em',
+    padding: '10px 16px',
+    borderRadius: '8px',
+    transition: 'all 0.3s ease',
+    fontSize: '0.95em',
     backgroundColor: 'transparent',
-    fontFamily: 'Montserrat',
+    fontFamily: "'Raleway', sans-serif",
   },
   activeLink: {
-    backgroundColor: '#007C8A',
+    backgroundColor: '#3b82f6',
     color: 'white',
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
   },
   authButton: {
     background: 'transparent',
-    border: '1px solid #007C8A',
-    color: '#007C8A',
+    border: '2px solid #3b82f6',
+    color: '#3b82f6',
     cursor: 'pointer',
-    fontWeight: '500',
-    padding: '8px 18px',
-    borderRadius: '4px',
+    fontWeight: '600',
+    padding: '10px 20px',
+    borderRadius: '8px',
     fontSize: '0.95em',
-    transition: 'background-color 0.2s ease, color 0.2s ease',
+    transition: 'all 0.3s ease',
     marginLeft: '10px',
+    fontFamily: "'Raleway', sans-serif",
   },
 };
 
@@ -90,12 +93,19 @@ function PageTracker() {
 
 export default function App() {
   return (
-    <Router>
-      <SessionWalletAuthProvider>
-        <PageTracker />
-        <AppLayout />
-      </SessionWalletAuthProvider>
-    </Router>
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+        `}
+      </style>
+      <Router>
+        <SessionWalletAuthProvider>
+          <PageTracker />
+          <AppLayout />
+        </SessionWalletAuthProvider>
+      </Router>
+    </>
   );
 }
 
@@ -129,7 +139,7 @@ function AppLayout() {
     <>
       <nav style={navStyles.nav}>
         <RouterLink to="/landing" style={navStyles.brandLink}>
-          nGoDONATE
+          nGoDonate
         </RouterLink>
 
         <div style={navStyles.navLinksContainer}>

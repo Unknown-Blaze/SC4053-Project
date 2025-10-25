@@ -245,7 +245,7 @@ const SignupPage = () => {
   return (
     <div className={classes.pageContainer}>
       <div className={classes.formBox}>
-        <h2 className={classes.title}>Register for nGoDONATE</h2>
+        <h2 className={classes.title}>Register for nGoDonate</h2>
 
         {error && <p className={classes.error}><FiAlertCircle style={{ marginRight: '5px' }} />{error}</p>}
 

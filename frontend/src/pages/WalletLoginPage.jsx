@@ -130,7 +130,7 @@ const WalletLoginPage = () => {
       <div className={classes.formBox}>
         <h2 className={classes.title}>Connect Your Wallet</h2>
         <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-          Connect your MetaMask wallet to access nGoDONATE
+          Connect your MetaMask wallet to access nGoDonate
         </p>
 
         {error && <p className={classes.error}><FiAlertCircle style={{ marginRight: '5px' }} />{error}</p>}
@@ -184,7 +184,7 @@ const WalletLoginPage = () => {
 
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <p className={classes.linkText}>
-            New to nGoDONATE? <button onClick={handleSignUp} style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>Sign Up</button>
+            New to nGoDonate? <button onClick={handleSignUp} style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer' }}>Sign Up</button>
           </p>
           <button onClick={() => navigate('/')} className={classes.backLink} style={{ background: 'none', border: 'none', color: '#666', textDecoration: 'underline', cursor: 'pointer', marginTop: '10px' }}>
             ← Back to Home

@@ -4,8 +4,21 @@ import { ethers } from 'ethers';
 import { useAuth } from '../contexts/AuthContext';
 import { useSessionWalletAuth } from '../contexts/SessionWalletAuthContext';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
-import { FiLoader, FiAlertCircle, FiCheckCircle, FiDownloadCloud, FiUser, FiLock } from 'react-icons/fi';
-import classes from '../styles/AdminLoginPage.module.css';
+import { 
+  FiLoader, 
+  FiAlertCircle, 
+  FiCheckCircle, 
+  FiDownload, 
+  FiUser, 
+  FiLock,
+  FiCreditCard,
+  FiShield,
+  FiArrowRight,
+  FiMail,
+  FiKey,
+  FiHome,
+  FiUserCheck
+} from 'react-icons/fi';
 import { collection, query, where, getDocs, limit } from "firebase/firestore";
 import { db } from '../firebase/config';
 
@@ -48,88 +61,54 @@ const UnifiedAuthPage = () => {
       try {
         const installed = typeof window.ethereum !== 'undefined';
         setMetaMaskInstalled(installed);
-        
-        if (!installed) {
-          handleStepChange("MetaMask not detected.");
-        } else {
-          handleStepChange("Ready to connect your wallet!");
-        }
-      } catch (e) {
-        console.error("Error checking MetaMask:", e);
-        setMetaMaskInstalled(false);
-        setError("Could not detect MetaMask. Ensure your browser supports extensions and try refreshing.");
-        handleStepChange("");
-      } finally {
-        setWalletLoading(false);
         setWalletChecked(true);
+        setWalletLoading(false);
+        handleStepChange('');
+      } catch (err) {
+        console.error("Error checking MetaMask installation:", err);
+        setError("Error checking MetaMask installation. Please refresh the page.");
+        setWalletLoading(false);
+        handleStepChange('');
       }
     }
     checkInstallation();
   }, []);
 
   const handleStepChange = (message) => {
-    setLoadingMessage(message || '');
-  };
-
-  const checkIfUserExists = async (address) => {
-    try {
-      console.log("Checking if user exists for address:", address);
-      const usersRef = collection(db, "users");
-      const q = query(usersRef, where("walletAddress", "==", address), limit(1));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        // User exists - redirect to login page
-        console.log("User exists, redirecting to login");
-        setIsExistingUser(true);
-        handleStepChange("Account found! Redirecting to login...");
-        
-        // Show brief message then redirect
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
-      } else {
-        // User doesn't exist - show registration form
-        console.log("User doesn't exist, showing registration form");
-        setIsExistingUser(false);
-        handleStepChange("Welcome! Please complete your registration.");
-        setShowForm(true);
-      }
-    } catch (error) {
-      console.error("Error checking user existence:", error);
-      setError("Error checking account status. Please try again.");
-    }
+    setLoadingMessage(message);
   };
 
   const handleConnectWallet = async () => {
-    if (!metaMaskInstalled) {
-      setError("Please install MetaMask first.");
-      return;
-    }
-
-    setError('');
     setWalletLoading(true);
-    handleStepChange("Please approve connection in MetaMask...");
-
+    setError('');
+    handleStepChange("Connecting to MetaMask...");
+    
     try {
-      const { address } = await connectWallet();
+      const walletData = await connectWallet();
+      const address = walletData.address;
       setWalletAddress(address);
-      handleStepChange("Checking if you have an account...");
+      handleStepChange("Checking if account exists...");
       
-      // Check if user exists
-      await checkIfUserExists(address);
-    } catch (err) {
-      console.error('Error during MetaMask connection:', err);
-      let errorMessage = 'An unexpected error occurred.';
+      // Check if user exists in Firestore
+      const userQuery = query(
+        collection(db, "users"),
+        where("walletAddress", "==", address),
+        limit(1)
+      );
+      const userSnapshot = await getDocs(userQuery);
       
-      if (err.code === 4001 || (err.info && err.info.error && err.info.error.code === 4001)) {
-        errorMessage = 'Connection to MetaMask was rejected. Please approve the request to continue.';
+      if (!userSnapshot.empty) {
+        setIsExistingUser(true);
+        handleStepChange('');
+        // Don't redirect - show login form on same page
       } else {
-        errorMessage = err.message || 'Failed to connect wallet.';
+        setIsExistingUser(false);
+        setShowForm(true);
+        handleStepChange('');
       }
-      
-      setError(errorMessage);
-      setWalletAddress(null);
+    } catch (err) {
+      console.error("Error connecting wallet:", err);
+      setError("Failed to connect wallet. Please try again.");
       handleStepChange('');
     } finally {
       setWalletLoading(false);
@@ -138,15 +117,16 @@ const UnifiedAuthPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
-    handleStepChange("Signing in...");
-
+    setError('');
+    handleStepChange("Logging in...");
+    
     try {
       await login(email, password);
       navigate('/userprofile');
     } catch (err) {
-      setError('Failed to log in. Check credentials.');
+      console.error("Login error:", err);
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
       handleStepChange('');
@@ -155,33 +135,26 @@ const UnifiedAuthPage = () => {
 
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) return setError("Passwords do not match.");
-    if (password.length < 6) return setError("Password should be at least 6 characters.");
-
-    setError('');
     setLoading(true);
+    setError('');
     handleStepChange("Creating your account...");
+    
+    if (password !== confirmPassword) {
+      setLoading(false);
+      handleStepChange('');
+      return setError("Passwords do not match.");
+    }
 
-    let nameToRegister;
-    let additionalData = {
-      userType,
-      walletAddress: walletAddress
-    };
+    let nameToRegister = displayName;
+    let additionalData = { walletAddress };
 
-    if (userType === 'donor') {
-      if (!displayName.trim()) { 
-        setLoading(false); 
-        handleStepChange(''); 
-        return setError("Full Name is required for donors."); 
-      }
-      nameToRegister = displayName;
-    } else {
-      if (!organizationName.trim()) { 
+    if (userType === 'ngo') {
+      if (!organizationName) { 
         setLoading(false); 
         handleStepChange(''); 
         return setError("Organization Name is required."); 
       }
-      if (!contactPersonName.trim()) { 
+      if (!contactPersonName) { 
         setLoading(false); 
         handleStepChange(''); 
         return setError("Contact Person Name is required."); 
@@ -218,255 +191,864 @@ const UnifiedAuthPage = () => {
     return <Navigate to="/userprofile" replace />;
   }
 
-  const renderDonorFields = (
-    <>
-      <div className={classes.formGroup}>
-        <label htmlFor="displayName" className={classes.label}>Full Name</label>
-        <input 
-          type="text" 
-          id="displayName" 
-          value={displayName} 
-          onChange={(e) => setDisplayName(e.target.value)} 
-          required 
-          className={classes.input} 
-          disabled={loading} 
-        />
-      </div>
-    </>
-  );
-
-  const renderNonprofitFields = (
-    <>
-      <div className={classes.formGroup}>
-        <label htmlFor="organizationName" className={classes.label}>Organization Name</label>
-        <input 
-          type="text" 
-          id="organizationName" 
-          value={organizationName} 
-          onChange={(e) => setOrganizationName(e.target.value)} 
-          required 
-          className={classes.input} 
-          disabled={loading} 
-        />
-      </div>
-      <div className={classes.formGroup}>
-        <label htmlFor="contactPersonName" className={classes.label}>Contact Person Name</label>
-        <input 
-          type="text" 
-          id="contactPersonName" 
-          value={contactPersonName} 
-          onChange={(e) => setContactPersonName(e.target.value)} 
-          required 
-          className={classes.input} 
-          disabled={loading} 
-        />
-      </div>
-      <div className={classes.formGroup}>
-        <label htmlFor="organizationType" className={classes.label}>Organization Type</label>
-        <input 
-          type="text" 
-          id="organizationType" 
-          value={organizationType} 
-          onChange={(e) => setOrganizationType(e.target.value)} 
-          required 
-          className={classes.input} 
-          disabled={loading} 
-        />
-      </div>
-      <div className={classes.formGroup}>
-        <label htmlFor="registrationNumber" className={classes.label}>Registration Number (Optional)</label>
-        <input 
-          type="text" 
-          id="registrationNumber" 
-          value={registrationNumber} 
-          onChange={(e) => setRegistrationNumber(e.target.value)} 
-          className={classes.input} 
-          disabled={loading} 
-        />
-      </div>
-      <div className={classes.formGroup}>
-        <label htmlFor="description" className={classes.label}>Brief Description of Organization</label>
-        <textarea 
-          id="description" 
-          value={description} 
-          onChange={(e) => setDescription(e.target.value)} 
-          required 
-          className={classes.textarea} 
-          placeholder="What your organization does, its mission..." 
-          disabled={loading} 
-        />
-      </div>
-    </>
-  );
-
   return (
-    <div className={classes.pageContainer}>
-      <div className={classes.formBox}>
-        <h2 className={classes.title}>
-          {isExistingUser === null ? 'Connect Your Wallet' : 
-           isExistingUser ? 'Account Found!' : 'Join nGoDONATE'}
-        </h2>
-        
-        {isExistingUser === null && (
-          <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-            Connect your MetaMask wallet to get started
-          </p>
-        )}
-        
-        {isExistingUser === true && (
-          <p style={{ textAlign: 'center', color: '#4CAF50', marginBottom: '30px', fontWeight: '500' }}>
-            We found your account! Redirecting you to the login page...
-          </p>
-        )}
-        
-        {isExistingUser === false && (
-          <p style={{ textAlign: 'center', color: '#007bff', marginBottom: '30px', fontWeight: '500' }}>
-            Welcome! Please complete your registration below.
-          </p>
-        )}
-
-        {error && <p className={classes.error}><FiAlertCircle style={{ marginRight: '5px' }} />{error}</p>}
-
-        {/* MetaMask Connection Section */}
-        {!walletChecked && (
-          <div className={classes.formGroup} style={{ textAlign: 'center', padding: '20px 0' }}>
-            <FiLoader className={classes.spinner} style={{ fontSize: '1.5em', color: '#0D253F', animation: 'spin 1s linear infinite' }} />
-            <p style={{ color: '#34495E', marginTop: '10px' }}>{loadingMessage || "Checking MetaMask status..."}</p>
-          </div>
-        )}
-
-        {walletChecked && !metaMaskInstalled && (
-          <div className={classes.formGroup} style={{ textAlign: 'center', padding: '20px', border: '1px dashed #0D253F', borderRadius: '8px', backgroundColor: 'rgba(13, 37, 63, 0.03)' }}>
-            <FiDownloadCloud style={{ fontSize: '2em', color: '#0D253F', marginBottom: '10px' }} />
-            <p style={{ color: '#0D253F', marginBottom: '15px', fontWeight: 500 }}>MetaMask Extension Required</p>
-            <a href={METAMASK_INSTALL_URL} target="_blank" rel="noopener noreferrer" className={classes.button} style={{ backgroundColor: '#007bff', width: 'auto' }}>
-              Install MetaMask
-            </a>
-            <p style={{ color: '#34495E', fontSize: '0.8em', marginTop: '15px' }}>
-              After installing, please <button onClick={() => window.location.reload()} style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer', padding: 0 }}>refresh this page</button>.
-            </p>
-          </div>
-        )}
-
-        {walletChecked && metaMaskInstalled && !walletAddress && (
-          <div className={classes.formGroup} style={{ textAlign: 'center', marginBottom: '25px' }}>
-            <button
-              type="button"
-              onClick={handleConnectWallet}
-              className={classes.button}
-              disabled={walletLoading}
-              style={{ backgroundColor: '#007bff', width: 'auto', padding: '12px 25px' }}
-            >
-              {walletLoading ? <FiLoader className={classes.spinner} style={{ marginRight: '8px', animation: 'spin 1s linear infinite' }} /> : null}
-              {walletLoading ? loadingMessage : "Connect Your MetaMask Wallet"}
-            </button>
-            <p style={{ color: '#34495E', fontSize: '0.85em', marginTop: '10px' }}>
-              You'll need to connect your wallet to proceed.
-            </p>
-          </div>
-        )}
-
-        {walletAddress && (
-          <div className={classes.formGroup} style={{ textAlign: 'center', marginBottom: '20px', padding: '15px', border: '1px solid #4CAF50', borderRadius: '8px', backgroundColor: '#e8f5e9' }}>
-            <FiCheckCircle style={{ fontSize: '1.5em', color: '#4CAF50', marginBottom: '8px' }} />
-            <p style={{ color: '#388E3C', fontWeight: '500', margin: '0 0 5px 0' }}>MetaMask Connected!</p>
-            <p style={{ fontSize: '0.8em', wordBreak: 'break-all', margin: '0', color: '#555' }}>Address: {walletAddress}</p>
-            {loadingMessage && <p style={{ fontSize: '0.8em', margin: '10px 0 0 0', color: '#666' }}>{loadingMessage}</p>}
-          </div>
-        )}
-
-        {/* Form Section - Only show for new users */}
-        {showForm && walletAddress && isExistingUser === false && (
-          <>
-            <div className={classes.userTypeToggle}>
-              <button
-                className={`${classes.toggleButton} ${userType === 'donor' ? classes.active : ''}`}
-                onClick={() => setUserType('donor')}
-                disabled={loading}>
-                I'm a Donor
-              </button>
-              <button
-                className={`${classes.toggleButton} ${userType === 'nonprofit' ? classes.active : ''}`}
-                onClick={() => setUserType('nonprofit')}
-                disabled={loading}>
-                I'm a Nonprofit
-              </button>
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+      <div style={{ 
+        minHeight: '100vh', 
+        background: '#f8fafc',
+        padding: '2rem 0',
+        fontFamily: 'Raleway, sans-serif'
+      }}>
+        <div style={{ 
+          maxWidth: '600px', 
+          margin: '0 auto', 
+          padding: '0 1rem'
+        }}>
+          {/* Header Section - Only show for initial wallet connection */}
+          {!walletAddress && (
+            <div style={{
+              textAlign: 'center',
+              marginBottom: '2rem'
+            }}>
+              <h1 style={{ 
+                fontSize: '2.5rem', 
+                fontWeight: 'bold', 
+                marginBottom: '0.5rem',
+                background: 'linear-gradient(135deg, #1f2937, #3b82f6, #1f2937)',
+                backgroundSize: '200% 100%',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                position: 'relative',
+                display: 'inline-block',
+                transition: 'all 0.3s ease'
+              }}>
+                Welcome to nGoDonate
+              </h1>
+              <p style={{ 
+                fontSize: '1.1rem', 
+                color: '#6b7280'
+              }}>
+                Connect your wallet to get started with secure, transparent donations to your favorite charity.
+              </p>
             </div>
+          )}
 
-            <form onSubmit={handleSignup}>
-              {userType === 'donor' ? renderDonorFields : renderNonprofitFields}
-
-              <div className={classes.formGroup}>
-                <label htmlFor="email" className={classes.label}>
-                  <FiUser style={{ marginRight: '5px' }} />
-                  Email Address
-                </label>
-                <input 
-                  type="email" 
-                  id="email" 
-                  value={email} 
-                  onChange={(e) => setEmail(e.target.value)} 
-                  required 
-                  className={classes.input} 
-                  autoComplete="email" 
-                  disabled={loading} 
-                />
+          {/* Main Auth Card */}
+          <div style={{
+            background: 'white',
+            borderRadius: '20px',
+            padding: '1.5rem',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)'
+          }}>
+            {/* Error Message */}
+            {error && (
+              <div style={{
+                background: '#fee2e2',
+                border: '1px solid #fecaca',
+                color: '#dc2626',
+                padding: '1rem',
+                borderRadius: '10px',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <FiAlertCircle style={{ width: '20px', height: '20px' }} />
+                {error}
               </div>
-              
-              <div className={classes.formGroup}>
-                <label htmlFor="password" className={classes.label}>
-                  <FiLock style={{ marginRight: '5px' }} />
-                  Password (min. 6 characters)
-                </label>
-                <input 
-                  type="password" 
-                  id="password" 
-                  value={password} 
-                  onChange={(e) => setPassword(e.target.value)} 
-                  required 
-                  className={classes.input} 
-                  autoComplete="new-password" 
-                  disabled={loading} 
-                />
-              </div>
-              
-              <div className={classes.formGroup}>
-                <label htmlFor="confirmPassword" className={classes.label}>Confirm Password</label>
-                <input 
-                  type="password" 
-                  id="confirmPassword" 
-                  value={confirmPassword} 
-                  onChange={(e) => setConfirmPassword(e.target.value)} 
-                  required 
-                  className={classes.input} 
-                  autoComplete="new-password" 
-                  disabled={loading} 
-                />
-              </div>
+            )}
 
-              <button 
-                type="submit" 
-                disabled={loading || !walletAddress} 
-                className={classes.button}
-              >
-                {loading && !loadingMessage.includes("MetaMask Wallet") ? (
-                  <>
-                    <FiLoader className={classes.spinner} style={{ marginRight: '8px', animation: 'spin 1s linear infinite' }} />
-                    {loadingMessage || 'Processing...'}
-                  </>
-                ) : (
-                  'Complete Registration'
-                )}
-              </button>
-            </form>
-          </>
-        )}
+            {/* Loading Message */}
+            {loadingMessage && (
+              <div style={{
+                background: '#dbeafe',
+                border: '1px solid #93c5fd',
+                color: '#1d4ed8',
+                padding: '1rem',
+                borderRadius: '10px',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <FiLoader style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+                {loadingMessage}
+              </div>
+            )}
 
-        <div style={{ marginTop: '20px', textAlign: 'center' }}>
-          <Link to="/" className={classes.backLink}>← Back to Home</Link>
+            {/* MetaMask Not Installed */}
+            {!metaMaskInstalled && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                  borderRadius: '50%',
+                  width: '80px',
+                  height: '80px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1.5rem',
+                  color: 'white'
+                }}>
+                  <FiDownload style={{ width: '40px', height: '40px' }} />
+                </div>
+                <h2 style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: '600', 
+                  color: '#374151',
+                  marginBottom: '1rem'
+                }}>
+                  MetaMask Required
+                </h2>
+                <p style={{ 
+                  color: '#6b7280', 
+                  marginBottom: '2rem',
+                  lineHeight: '1.6'
+                }}>
+                  Please install MetaMask browser extension to connect your wallet and access our platform.
+                </p>
+                <a 
+                  href={METAMASK_INSTALL_URL} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '1rem 2rem',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.3s',
+                    boxShadow: '0 8px 25px rgba(245, 158, 11, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 12px 35px rgba(245, 158, 11, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 8px 25px rgba(245, 158, 11, 0.3)';
+                  }}
+                >
+                  <FiDownload style={{ width: '20px', height: '20px' }} />
+                  Install MetaMask
+                </a>
+              </div>
+            )}
+
+            {/* Wallet Connection Prompt */}
+            {metaMaskInstalled && !walletAddress && walletChecked && !isExistingUser && !showForm && (
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                  borderRadius: '16px',
+                  width: '60px',
+                  height: '60px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1rem',
+                  color: 'white',
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                }}>
+                  <FiCreditCard style={{ width: '28px', height: '28px' }} />
+                </div>
+                <h2 style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: '600', 
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>
+                  Connect Your Wallet
+                </h2>
+                <button 
+                  onClick={handleConnectWallet}
+                  disabled={walletLoading}
+                  style={{
+                    background: walletLoading ? '#9ca3af' : 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '0.875rem 1.75rem',
+                    fontSize: '0.95rem',
+                    fontWeight: '600',
+                    cursor: walletLoading ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    margin: '0 auto',
+                    transition: 'all 0.3s',
+                    boxShadow: walletLoading ? 'none' : '0 6px 20px rgba(59, 130, 246, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    if (!walletLoading) {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 8px 25px rgba(59, 130, 246, 0.4)';
+                    }
+                  }}
+                  onMouseOut={(e) => {
+                    if (!walletLoading) {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(59, 130, 246, 0.3)';
+                    }
+                  }}
+                >
+                  {walletLoading ? (
+                    <>
+                      <FiLoader style={{ width: '18px', height: '18px', animation: 'spin 1s linear infinite' }} />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <FiCreditCard style={{ width: '18px', height: '18px' }} />
+                      Connect MetaMask
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Existing User Login */}
+            {isExistingUser === true && (
+              <div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderRadius: '50%',
+                  width: '80px',
+                  height: '80px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1.5rem',
+                  color: 'white'
+                }}>
+                  <FiUserCheck style={{ width: '40px', height: '40px' }} />
+                </div>
+                <h2 style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: '600', 
+                  color: '#374151',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
+                }}>
+                  Account Found!
+                </h2>
+                <p style={{ 
+                  color: '#6b7280', 
+                  marginBottom: '2rem',
+                  lineHeight: '1.6',
+                  textAlign: 'center'
+                }}>
+                  We found an existing account for this wallet. Please log in with your credentials.
+                </p>
+                
+                <form onSubmit={handleLogin} style={{ display: 'grid', gap: '1.5rem' }}>
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontWeight: '500', 
+                      color: '#374151',
+                      marginBottom: '0.5rem',
+                      fontSize: '0.95rem'
+                    }}>
+                      <FiMail style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      placeholder="Enter your email"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '10px',
+                        fontSize: '1rem',
+                        transition: 'all 0.2s',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                      onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label style={{ 
+                      display: 'block', 
+                      fontWeight: '500', 
+                      color: '#374151',
+                      marginBottom: '0.5rem',
+                      fontSize: '0.95rem'
+                    }}>
+                      <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                      Password
+                    </label>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      placeholder="Enter your password"
+                      style={{
+                        width: '100%',
+                        padding: '0.75rem',
+                        border: '2px solid #e5e7eb',
+                        borderRadius: '10px',
+                        fontSize: '1rem',
+                        transition: 'all 0.2s',
+                        outline: 'none'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                      onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                    />
+                  </div>
+                  
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{
+                      background: loading ? '#9ca3af' : 'linear-gradient(135deg, #10b981, #059669)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '1rem 2rem',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      transition: 'all 0.3s',
+                      boxShadow: loading ? 'none' : '0 8px 25px rgba(16, 185, 129, 0.3)'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!loading) {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 12px 35px rgba(16, 185, 129, 0.4)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!loading) {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(16, 185, 129, 0.3)';
+                      }
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <FiLoader style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+                        Logging In...
+                      </>
+                    ) : (
+                      <>
+                        <FiShield style={{ width: '20px', height: '20px' }} />
+                        Log In
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Registration Form */}
+            {showForm && (
+              <div>
+                <div style={{
+                  background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                  borderRadius: '50%',
+                  width: '80px',
+                  height: '80px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 1.5rem',
+                  color: 'white'
+                }}>
+                  <FiUser style={{ width: '40px', height: '40px' }} />
+                </div>
+                <h2 style={{ 
+                  fontSize: '1.5rem', 
+                  fontWeight: '600', 
+                  color: '#374151',
+                  marginBottom: '1rem',
+                  textAlign: 'center'
+                }}>
+                  Complete Your Registration
+                </h2>
+                <p style={{ 
+                  color: '#6b7280', 
+                  marginBottom: '2rem',
+                  lineHeight: '1.6',
+                  textAlign: 'center'
+                }}>
+                  Please provide the following information to create your account.
+                </p>
+                
+                {/* User Type Selection Tabs */}
+                <div style={{
+                  display: 'flex',
+                  background: '#f1f5f9',
+                  borderRadius: '12px',
+                  padding: '4px',
+                  marginBottom: '2rem'
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setUserType('donor')}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: userType === 'donor' ? 'white' : 'transparent',
+                      color: userType === 'donor' ? '#374151' : '#6b7280',
+                      fontWeight: userType === 'donor' ? '600' : '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: userType === 'donor' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <FiUser style={{ width: '18px', height: '18px' }} />
+                    I'm a Donor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setUserType('ngo')}
+                    style={{
+                      flex: 1,
+                      padding: '0.75rem 1rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: userType === 'ngo' ? 'white' : 'transparent',
+                      color: userType === 'ngo' ? '#374151' : '#6b7280',
+                      fontWeight: userType === 'ngo' ? '600' : '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      boxShadow: userType === 'ngo' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <FiHome style={{ width: '18px', height: '18px' }} />
+                    I'm an NGO
+                  </button>
+                </div>
+                
+                <form onSubmit={handleSignup} style={{ display: 'grid', gap: '1.5rem' }}>
+                  {/* Basic Information */}
+                  <div style={{
+                    background: '#f8fafc',
+                    borderRadius: '15px',
+                    padding: '1.5rem',
+                    border: '2px solid #e2e8f0'
+                  }}>
+                    <h3 style={{ 
+                      fontSize: '1.1rem', 
+                      fontWeight: '600', 
+                      color: '#374151',
+                      marginBottom: '1rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      <FiUser style={{ width: '20px', height: '20px', color: '#3b82f6' }} />
+                      Basic Information
+                    </h3>
+                    
+                    <div style={{ display: 'grid', gap: '1rem' }}>
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '500', 
+                          color: '#374151',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.95rem'
+                        }}>
+                          <FiMail style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          placeholder="Enter your email"
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '500', 
+                          color: '#374151',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.95rem'
+                        }}>
+                          <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          placeholder="Create a password"
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '500', 
+                          color: '#374151',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.95rem'
+                        }}>
+                          <FiKey style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                          Confirm Password
+                        </label>
+                        <input
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          placeholder="Confirm your password"
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label style={{ 
+                          display: 'block', 
+                          fontWeight: '500', 
+                          color: '#374151',
+                          marginBottom: '0.5rem',
+                          fontSize: '0.95rem'
+                        }}>
+                          <FiUser style={{ width: '16px', height: '16px', display: 'inline', marginRight: '0.5rem' }} />
+                          Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          required
+                          placeholder="Enter your full name"
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem',
+                            border: '2px solid #e5e7eb',
+                            borderRadius: '8px',
+                            fontSize: '1rem',
+                            transition: 'all 0.2s',
+                            outline: 'none'
+                          }}
+                          onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                          onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* NGO Information */}
+                  {userType === 'ngo' && (
+                    <div style={{
+                      background: '#f8fafc',
+                      borderRadius: '15px',
+                      padding: '1.5rem',
+                      border: '2px solid #e2e8f0'
+                    }}>
+                      <h3 style={{ 
+                        fontSize: '1.1rem', 
+                        fontWeight: '600', 
+                        color: '#374151',
+                        marginBottom: '1rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <FiHome style={{ width: '20px', height: '20px', color: '#3b82f6' }} />
+                        Organization Details
+                      </h3>
+                      
+                      <div style={{ display: 'grid', gap: '1rem' }}>
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            Organization Name
+                          </label>
+                          <input
+                            type="text"
+                            value={organizationName}
+                            onChange={(e) => setOrganizationName(e.target.value)}
+                            required
+                            placeholder="Enter organization name"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            Contact Person Name
+                          </label>
+                          <input
+                            type="text"
+                            value={contactPersonName}
+                            onChange={(e) => setContactPersonName(e.target.value)}
+                            required
+                            placeholder="Enter contact person name"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            Organization Type
+                          </label>
+                          <input
+                            type="text"
+                            value={organizationType}
+                            onChange={(e) => setOrganizationType(e.target.value)}
+                            required
+                            placeholder="e.g., Charity, Foundation, NGO"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            Registration Number
+                          </label>
+                          <input
+                            type="text"
+                            value={registrationNumber}
+                            onChange={(e) => setRegistrationNumber(e.target.value)}
+                            required
+                            placeholder="Enter registration number"
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label style={{ 
+                            display: 'block', 
+                            fontWeight: '500', 
+                            color: '#374151',
+                            marginBottom: '0.5rem',
+                            fontSize: '0.95rem'
+                          }}>
+                            Organization Description
+                          </label>
+                          <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            required
+                            placeholder="Describe your organization's mission and activities"
+                            rows={4}
+                            style={{
+                              width: '100%',
+                              padding: '0.75rem',
+                              border: '2px solid #e5e7eb',
+                              borderRadius: '8px',
+                              fontSize: '1rem',
+                              transition: 'all 0.2s',
+                              outline: 'none',
+                              resize: 'vertical'
+                            }}
+                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{
+                      background: loading ? '#9ca3af' : 'linear-gradient(135deg, #8b5cf6, #7c3aed)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '1rem 2rem',
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '0.5rem',
+                      transition: 'all 0.3s',
+                      boxShadow: loading ? 'none' : '0 8px 25px rgba(139, 92, 246, 0.3)'
+                    }}
+                    onMouseOver={(e) => {
+                      if (!loading) {
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 12px 35px rgba(139, 92, 246, 0.4)';
+                      }
+                    }}
+                    onMouseOut={(e) => {
+                      if (!loading) {
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 8px 25px rgba(139, 92, 246, 0.3)';
+                      }
+                    }}
+                  >
+                    {loading ? (
+                      <>
+                        <FiLoader style={{ width: '20px', height: '20px', animation: 'spin 1s linear infinite' }} />
+                        Creating Account...
+                      </>
+                    ) : (
+                      <>
+                        <FiUser style={{ width: '20px', height: '20px' }} />
+                        Create Account
+                        <FiArrowRight style={{ width: '16px', height: '16px' }} />
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Fallback - Show if nothing else matches */}
+            {!metaMaskInstalled && walletChecked && (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <p style={{ color: '#6b7280' }}>MetaMask is not installed. Please install it to continue.</p>
+              </div>
+            )}
+
+            {metaMaskInstalled && walletChecked && !walletAddress && !isExistingUser && !showForm && (
+              <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                <p style={{ color: '#6b7280' }}>Please connect your wallet to continue.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
