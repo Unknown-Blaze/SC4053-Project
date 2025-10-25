@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
-import styles from '../styles/UserProfile.module.css'
+import styles from '../styles/UserProfile.module.css';
 import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
