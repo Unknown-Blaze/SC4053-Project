@@ -40,7 +40,6 @@ const UnifiedAuthPage = () => {
   const [organizationName, setOrganizationName] = useState('');
   const [contactPersonName, setContactPersonName] = useState('');
   const [organizationType, setOrganizationType] = useState('');
-  const [registrationNumber, setRegistrationNumber] = useState('');
   const [description, setDescription] = useState('');
   const [userType, setUserType] = useState('donor');
   
@@ -174,7 +173,6 @@ const UnifiedAuthPage = () => {
         organizationName, 
         contactPersonName, 
         organizationType, 
-        registrationNumber, 
         description 
       };
     } else {
@@ -1022,35 +1020,6 @@ const UnifiedAuthPage = () => {
                           />
                         </div>
                         
-                        <div>
-                          <label style={{ 
-                            display: 'block', 
-                            fontWeight: '500', 
-                            color: '#374151',
-                            marginBottom: '0.5rem',
-                            fontSize: '0.95rem'
-                          }}>
-                            Registration Number
-                          </label>
-                          <input
-                            type="text"
-                            value={registrationNumber}
-                            onChange={(e) => setRegistrationNumber(e.target.value)}
-                            required
-                            placeholder="Enter registration number"
-                            style={{
-                              width: '100%',
-                              padding: '0.75rem',
-                              border: '2px solid #e5e7eb',
-                              borderRadius: '8px',
-                              fontSize: '1rem',
-                              transition: 'all 0.2s',
-                              outline: 'none'
-                            }}
-                            onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
-                            onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-                          />
-                        </div>
                         
                         <div>
                           <label style={{ 

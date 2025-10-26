@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 from services.eth_client import w3
-from constants import NGO_WALLET_ADDRESS
 import requests
 import os
 
@@ -13,7 +12,7 @@ ETHERSCAN_API_KEY = os.getenv("ETHERSCAN_API_KEY")
 ETHERSCAN_API_URL = "https://api.etherscan.io/v2/api"
 
 @router.get("/latest-transactions")
-def get_latest_transactions(address: str = NGO_WALLET_ADDRESS):
+def get_latest_transactions(address: str):
     """
     Fetches the latest 10 transactions for a given Ethereum address
     using the Etherscan Sepolia v2 API.
@@ -60,14 +59,19 @@ def get_latest_transactions(address: str = NGO_WALLET_ADDRESS):
         if data.get("status") == "1" or isinstance(result, list):
             formatted_transactions = []
             for tx in result:
-                formatted_transactions.append({
-                    'hash': tx.get('hash'),
-                    'from': tx.get('from'),
-                    'to': tx.get('to'),
-                    'value_ether': w3.from_wei(int(tx.get('value', 0)), 'ether'),
-                    'blockNumber': tx.get('blockNumber'),
-                    'timeStamp': tx.get('timeStamp')
-                })
+                # Debug: Print transaction status fields
+                print(f"Transaction {tx.get('hash', 'unknown')}: isError={tx.get('isError')}, txreceipt_status={tx.get('txreceipt_status')}")
+                
+                # Only include successful transactions (status = 1)
+                if tx.get('isError') == '0' and tx.get('txreceipt_status') == '1':
+                    formatted_transactions.append({
+                        'hash': tx.get('hash'),
+                        'from': tx.get('from'),
+                        'to': tx.get('to'),
+                        'value_ether': w3.from_wei(int(tx.get('value', 0)), 'ether'),
+                        'blockNumber': tx.get('blockNumber'),
+                        'timeStamp': tx.get('timeStamp')
+                    })
             return {"transactions": formatted_transactions}
 
         # --- 6. Handle No Transactions ---

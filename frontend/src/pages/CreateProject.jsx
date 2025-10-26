@@ -109,9 +109,90 @@ function CharityProjectForm() {
         amount: parseFloat(amount),
       }));
 
-      onStepChange("Creating project...");
+      onStepChange("Preparing smart contract deployment...");
       
-      // Save project data to Firestore
+      console.log('Starting project creation...');
+      console.log('Request data:', {
+        name,
+        description,
+        contact_email: contactEmail,
+        eth_wallet_address: ethWalletAddress,
+        milestones: milestoneData,
+        ngoName: ngoName,
+        verifier_address: ethWalletAddress
+      });
+      
+      // Call backend to get unsigned transaction
+      const response = await fetch('http://127.0.0.1:8000/projects/create-project', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          contact_email: contactEmail,
+          eth_wallet_address: ethWalletAddress,
+          milestones: milestoneData,
+          ngoName: ngoName,
+          verifier_address: ethWalletAddress // Using NGO wallet as verifier for now
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Backend response not ok:', response.status, response.statusText);
+        let errorMessage = 'Failed to create project';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          const textResponse = await response.text();
+          console.error('Raw response:', textResponse);
+          errorMessage = `Server error: ${response.status} - ${textResponse}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const projectData = await response.json();
+      console.log('Backend response:', projectData);
+      console.log('Unsigned transaction:', projectData.unsigned_transaction);
+      
+      onStepChange("Please sign the transaction in MetaMask...");
+      
+      // Check if MetaMask is available
+      if (typeof window.ethereum === 'undefined') {
+        throw new Error('MetaMask is not installed. Please install MetaMask to continue.');
+      }
+
+      // Get the provider and signer
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      
+      // Ensure the transaction has the correct format
+      const tx = {
+        ...projectData.unsigned_transaction,
+        to: undefined, // Remove 'to' field for contract deployment
+        data: projectData.unsigned_transaction.data
+      };
+      
+      console.log('Formatted transaction for MetaMask:', tx);
+      
+      // Sign and send the transaction
+      const txResponse = await signer.sendTransaction(tx);
+      
+      onStepChange("Waiting for transaction confirmation...");
+      
+      // Wait for transaction to be mined
+      const receipt = await txResponse.wait();
+      
+      if (!receipt.contractAddress) {
+        throw new Error('Contract deployment failed - no contract address received');
+      }
+      
+      onStepChange("Saving project to database...");
+      
+      // Save project data to Firestore with contract information
       const docRef = await addDoc(collection(db, "charity_projects"), {
         name,
         description,
@@ -119,13 +200,17 @@ function CharityProjectForm() {
         eth_wallet_address: ethWalletAddress,
         milestones: milestoneData,
         ngoName: ngoName,
+        // Contract-related fields
+        project_id: `proj_${Date.now()}_${receipt.contractAddress.slice(-8)}`,
+        contract_address: receipt.contractAddress,
+        transaction_hash: receipt.hash,
         total_amount_eth: milestoneData.reduce((sum, m) => sum + m.amount, 0),
         milestone_count: milestoneData.length,
-        status: "pending",
+        status: "deployed",
         created_at: new Date().toISOString()
       });
 
-      setSuccess("Project created successfully! Your project is now under review.");
+      setSuccess(`Project created successfully! Contract deployed at: ${receipt.contractAddress}`);
 
       // Clear form (but keep auto-filled fields)
       setName("");

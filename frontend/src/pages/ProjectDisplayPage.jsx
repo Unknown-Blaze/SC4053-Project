@@ -8,6 +8,7 @@ import classes from '../styles/ProjectDisplayPage.module.css';
 // import { sendPayment } from '@gemwallet/api';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
+import { ethers } from 'ethers';
 
 // UPDATED: The endpoint now takes an 'address' parameter, not 'account'
 const LATEST_TRANSACTIONS_ENDPOINT = 'http://127.0.0.1:8000/transaction/latest-transactions';
@@ -26,7 +27,36 @@ const ProjectDisplayPage = () => {
   const [milestones, setMilestones] = useState([]);
   const [isLoadingMilestones, setIsLoadingMilestones] = useState(false);
   const [milestonesError, setMilestonesError] = useState(null);
+  const [contractBalance, setContractBalance] = useState('0');
+  const [totalDonations, setTotalDonations] = useState('0');
+  const [displayBalance, setDisplayBalance] = useState('0');
+  const [isAnimating, setIsAnimating] = useState(false);
 
+  // Slot machine animation effect
+  const animateBalance = (targetValue) => {
+    const target = parseFloat(targetValue);
+    const start = parseFloat(displayBalance);
+    const duration = 2000; // 2 seconds
+    const steps = 60; // 60 FPS
+    const stepDuration = duration / steps;
+    const increment = (target - start) / steps;
+    
+    setIsAnimating(true);
+    let currentStep = 0;
+    
+    const timer = setInterval(() => {
+      currentStep++;
+      const currentValue = start + (increment * currentStep);
+      
+      if (currentStep >= steps) {
+        setDisplayBalance(targetValue);
+        setIsAnimating(false);
+        clearInterval(timer);
+      } else {
+        setDisplayBalance(currentValue.toFixed(6));
+      }
+    }, stepDuration);
+  };
 
   // Fetch initial project details from Firestore
   useEffect(() => {
@@ -50,27 +80,19 @@ const ProjectDisplayPage = () => {
 
           setProjectData(data);
 
-          // --- MODIFICATION FOR FIXED MILESTONE STATUSES ---
+          // Set milestones with proper status based on contract state
           if (data.milestones && Array.isArray(data.milestones)) {
             const processedMilestones = data.milestones.map((m, index) => {
-              let status = "Pending"; // Default status
-              if (index === 0) {
-                status = "Completed";
-              } else if (index === 1) {
-                status = "In Progress";
-              }
-              // All others will remain 'Pending' by default due to the initial value
               return {
                 ...m,
-                id: m.id || m.name || `milestone-${index}`, // Ensure a unique key
-                status: status
+                id: m.id || m.name || `milestone-${index}`,
+                status: "Pending" // All milestones start as pending until funded
               };
             });
             setMilestones(processedMilestones);
           } else {
-            setMilestones([]); // Set to empty array if no milestones in Firestore data
+            setMilestones([]);
           }
-          // --- END MODIFICATION ---
 
         } else {
           setProjectError("Project not found.");
@@ -89,16 +111,99 @@ const ProjectDisplayPage = () => {
     fetchProject();
   }, [projectId]);
 
+  // Function to check contract balance and update milestone statuses
+  const checkContractStatus = useCallback(async (projectData) => {
+    if (!projectData?.contract_address) return;
+
+    try {
+      setIsLoadingMilestones(true);
+      
+      // Check if MetaMask is available
+      if (typeof window.ethereum === 'undefined') {
+        console.log('MetaMask not available for contract interaction');
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      
+      // Get contract balance
+      const balance = await provider.getBalance(projectData.contract_address);
+      const balanceEth = ethers.formatEther(balance);
+      setContractBalance(balanceEth);
+
+      // Trigger slot machine animation
+      animateBalance(balanceEth);
+
+      // If we have the contract ABI, we can get more detailed info
+      // For now, just show the balance
+      console.log(`Contract balance: ${balanceEth} ETH`);
+      
+      // Update milestone statuses based on funding
+      if (projectData.milestones && Array.isArray(projectData.milestones)) {
+        let cumulativeTarget = 0;
+        const updatedMilestones = projectData.milestones.map((milestone, index) => {
+          const milestoneAmount = parseFloat(milestone.amount);
+          const currentBalance = parseFloat(balanceEth);
+          
+          // Calculate cumulative target for this milestone
+          cumulativeTarget += milestoneAmount;
+          
+          let status = "Pending";
+          let fundingProgress = 0;
+          
+          // Check if current balance meets the cumulative target for this milestone
+          if (currentBalance >= cumulativeTarget) {
+            status = "Funded";
+            fundingProgress = 100;
+          } else if (currentBalance > 0) {
+            // Calculate funding progress towards cumulative target
+            fundingProgress = Math.min((currentBalance / cumulativeTarget) * 100, 100);
+            if (fundingProgress >= 100) {
+              status = "Funded";
+            } else if (fundingProgress > 0) {
+              status = "Partially Funded";
+            } else {
+              status = "Pending";
+            }
+          }
+          
+          return {
+            ...milestone,
+            id: milestone.id || milestone.name || `milestone-${index}`,
+            status: status,
+            fundingProgress: fundingProgress,
+            cumulativeTarget: cumulativeTarget, // Show cumulative target to donors
+            individualAmount: milestoneAmount // Keep original amount for reference
+          };
+        });
+        setMilestones(updatedMilestones);
+      }
+      
+    } catch (error) {
+      console.error('Error checking contract status:', error);
+      setMilestonesError('Failed to check contract funding status');
+    } finally {
+      setIsLoadingMilestones(false);
+    }
+  }, []);
+
+  // Check contract status when project data is loaded
+  useEffect(() => {
+    if (projectData?.contract_address) {
+      checkContractStatus(projectData);
+    }
+  }, [projectData, checkContractStatus]);
+
   const fetchTransactions = useCallback(async (isInitialFetch = false) => {
-    // We now need the ETHEREUM wallet address from the project data
-    if (!projectData?.eth_wallet_address) return;
+    // We need the contract address where donations are sent
+    if (!projectData?.contract_address) return;
     if (!isInitialFetch && isLoadingTx) return;
 
     setIsLoadingTx(true);
     setTxError(null);
     const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
-    // The backend endpoint now expects 'address'
-    url.searchParams.append('address', projectData.eth_wallet_address);
+    // The backend endpoint now expects 'address' - use contract address for donation tracking
+    url.searchParams.append('address', projectData.contract_address);
     try {
       const res = await fetch(url);
       if (!res.ok) {
@@ -150,8 +255,8 @@ const ProjectDisplayPage = () => {
 
   const getMilestoneStatusIcon = (status) => {
     const currentStatus = status ? status.toLowerCase() : "pending";
-    if (currentStatus === "completed") return <FiCheckCircle className={`${classes.milestoneIcon} ${classes.completed}`} />;
-    if (currentStatus === "in progress") return <FiLoader className={`${classes.milestoneIcon} ${classes.inProgress} ${classes.spinner}`} />;
+    if (currentStatus === "funded") return <FiCheckCircle className={`${classes.milestoneIcon} ${classes.completed}`} />;
+    if (currentStatus === "partially funded") return <FiLoader className={`${classes.milestoneIcon} ${classes.inProgress} ${classes.spinner}`} />;
     return <FiClock className={`${classes.milestoneIcon} ${classes.pending}`} />;
   };
 
@@ -166,11 +271,43 @@ const ProjectDisplayPage = () => {
   }
 
   return (
-    <div className={classes.pageContainer}>
+    <>
+      <style>
+        {`
+          @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap');
+        `}
+      </style>
+      <div className={classes.pageContainer} style={{ fontFamily: "'Raleway', sans-serif" }}>
       <div className={classes.projectHeader}>
         <h1>{projectData.name || 'Project Help all'}</h1>
         <p className={classes.ngoName}>by {projectData.ngoName || 'Teach for All'}</p>
         <p className={classes.projectDescription}>{projectData.description || 'No description provided.'}</p>
+        
+        {/* Contract Balance - Clean and simple */}
+        <div style={{
+          textAlign: 'center',
+          marginTop: '1.5rem',
+          fontFamily: "'Raleway', sans-serif"
+        }}>
+          <div style={{ 
+            fontSize: '2.2rem', 
+            fontWeight: '700', 
+            marginBottom: '0.5rem',
+            color: '#1f2937',
+            transition: 'all 0.1s ease',
+            transform: isAnimating ? 'scale(1.05)' : 'scale(1)',
+            textShadow: isAnimating ? '0 0 10px rgba(59, 130, 246, 0.3)' : 'none'
+          }}>
+            {parseFloat(displayBalance).toFixed(6)} ETH
+          </div>
+          <div style={{ 
+            fontSize: '1rem', 
+            color: '#6b7280',
+            fontWeight: '500'
+          }}>
+            {contractBalance === '0' ? 'No donations received yet' : 'Total funding received'}
+          </div>
+        </div>
       </div>
 
       <div className={classes.mainContentGrid}>
@@ -197,7 +334,6 @@ const ProjectDisplayPage = () => {
         <div className={classes.milestonesPanel}>
           <div className={classes.panelHeader}>
             <h2>Project Milestones</h2>
-            {/* "Advance Next Milestone (Simulate)" button is removed as statuses are fixed */}
           </div>
           {/* isLoadingMilestones might still be useful if initial processing takes time, but not for network loading */}
           {isLoadingMilestones && milestones.length === 0 && <FiLoader className={classes.spinner} />}
@@ -213,9 +349,14 @@ const ProjectDisplayPage = () => {
                   <div className={classes.milestoneInfo}>
                     <h3 className={classes.milestoneTitle}>{milestone.name || "Milestone"}</h3>
                     {milestone.description && <p className={classes.milestoneDetails}>{milestone.description}</p>}
-                    {milestone.amount && ( // Assuming 'amount' is part of the milestone object from Firestore
+                    {milestone.cumulativeTarget && ( // Show cumulative target for donors
                       <p className={classes.milestoneAmount}>
-                        Target: {milestone.amount} Ethereum
+                        Target: {milestone.cumulativeTarget.toFixed(6)} ETH
+                        {milestone.individualAmount && (
+                          <span style={{ fontSize: '0.8em', color: '#6b7280', marginLeft: '0.5rem' }}>
+                            (+{milestone.individualAmount} ETH)
+                          </span>
+                        )}
                       </p>
                     )}
                     <p className={classes.milestoneStatusText}>Status: {milestone.status}</p>
@@ -228,14 +369,15 @@ const ProjectDisplayPage = () => {
           </ul>
           <div className={classes.donate}>
             {/* UPDATED: The disabled check should now look for the Ethereum wallet */}
-            <button onClick={handleNavigateToDonatePage} disabled={!projectData || !projectData.eth_wallet_address}>
+            <button onClick={handleNavigateToDonatePage} disabled={!projectData || !projectData.contract_address}>
               <FiDollarSign /> Donate to Cause
             </button>
-            {(!projectData || !projectData.eth_wallet_address) && <p style={{fontSize: '0.8em', color: 'gray'}}>Donations unavailable.</p>}
+            {(!projectData || !projectData.contract_address) && <p style={{fontSize: '0.8em', color: 'gray'}}>Donations unavailable.</p>}
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
