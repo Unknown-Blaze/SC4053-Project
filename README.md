@@ -23,12 +23,12 @@
       <td>Generates a new Ethereum account (address and private key).</td>
     </tr>
     <tr>
-      <td><strong>Create Escrow Donations</strong></td>
-      <td>Deploys a time-locked escrow smart contract for each milestone-based donation.</td>
+      <td><strong>Create Multi-Milestone Projects</strong></td>
+      <td>Deploys a MultiMilestoneEscrow smart contract for charity projects with multiple funding milestones.</td>
     </tr>
     <tr>
-      <td><strong>Release/Cancel Escrow</strong></td>
-      <td>Allows the donor to release funds to the recipient or cancel the escrow and retrieve funds.</td>
+      <td><strong>Milestone Management</strong></td>
+      <td>Allows NGOs to complete milestones and verifiers to approve them for fund release.</td>
     </tr>
     <tr>
       <td><strong>Mint NFTs</strong></td>
@@ -106,19 +106,9 @@ npm run dev
       <td>Create a new Ethereum wallet.</td>
     </tr>
     <tr>
-      <td><code>/donate/donate</code></td>
+      <td><code>/projects/create-project</code></td>
       <td><strong>POST</strong></td>
-      <td>Create and fund an escrow smart contract for a donation.</td>
-    </tr>
-    <tr>
-      <td><code>/donate/release_escrow</code></td>
-      <td><strong>POST</strong></td>
-      <td>Release funds from an escrow contract to the recipient.</td>
-    </tr>
-     <tr>
-      <td><code>/donate/cancel_escrow</code></td>
-      <td><strong>POST</strong></td>
-      <td>Cancel an escrow and return funds to the donor.</td>
+      <td>Create a new charity project and deploy MultiMilestoneEscrow contract.</td>
     </tr>
     <tr>
       <td><code>/nft/mint</code></td>

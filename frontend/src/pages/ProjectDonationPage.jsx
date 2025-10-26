@@ -7,18 +7,18 @@ import { useAuth } from '../contexts/AuthContext'; // Import useAuth to get user
 import { FiDollarSign, FiArrowLeft, FiCheckCircle, FiLoader, FiAlertCircle } from 'react-icons/fi';
 import classes from '../styles/ProjectDonationPage.module.css';
 
-// NOTE: Your project data MUST now include the recipient's Ethereum address.
-// For example: { id: '1', name: '...', recipientAddress: '0x...' }
+// NOTE: Your project data MUST now include the contract address where donations are sent.
+// For example: { id: '1', name: '...', contract_address: '0x...' }
 const MOCK_PROJECT_DETAILS = {
   '1': {
     name: "Clean Water Initiative - Rural Village A",
     ngoName: "AquaHope Foundation",
-    recipientAddress: "0x99b1080004758b9913fd888454c446b757672175" // Example field
+    contract_address: "0x99b1080004758b9913fd888454c446b757672175" // Contract address for donations
   },
   '2': {
     name: "School Supplies for Underprivileged Children",
     ngoName: "LearnForward Org",
-    recipientAddress: "0x99b1080004758b9913fd888454c446b757672175"
+    contract_address: "0x99b1080004758b9913fd888454c446b757672175"
   }
 };
 
@@ -90,8 +90,8 @@ const ProjectDonationPage = () => {
       setDonationStatus('error');
       return;
     }
-    if (!project?.eth_wallet_address) {
-      setErrorMessage("This project does not have a valid recipient wallet address configured.");
+    if (!project?.contract_address) {
+      setErrorMessage("This project does not have a valid contract address configured.");
       setDonationStatus('error');
       return;
     }
@@ -105,45 +105,29 @@ const ProjectDonationPage = () => {
     setErrorMessage('');
 
     try {
-      // 2. --- PREPARE DATA FOR BACKEND ---
-      // The backend expects a list of milestones. For a simple donation,
-      // we create a single milestone. The unlock time must be in the future.
-      // We'll set it to 1 hour from now for the escrow contract.
-      const unlockTime = new Date(Date.now() + 3600 * 1000).toISOString();
-      const milestone = {
-        task: `Donation to ${project.name}`,
-        amount: parseFloat(amount),
-        time: unlockTime,
-      };
-
-      // 3. --- CALL BACKEND TO PREPARE THE TRANSACTION ---
-      const response = await fetch('http://localhost:8000/donate/prepare_donation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          donor_address: currentUserProfile.walletAddress,
-          recipient_address: project.eth_wallet_address,
-          milestones: [milestone],
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.detail || 'Failed to prepare the transaction on the server.');
-      }
-
-      const { unsigned_transactions } = data;
-      if (!unsigned_transactions || unsigned_transactions.length === 0) {
-        throw new Error("Backend did not return a transaction to sign.");
-      }
-      const unsignedTx = unsigned_transactions[0]; // We only have one milestone
-
-      // 4. --- USE ETHERS.JS TO SEND TRANSACTION VIA METAMASK ---
+      // 2. --- SEND DONATION DIRECTLY TO CONTRACT ---
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // MetaMask will pop up and ask the user to confirm.
-      const txResponse = await signer.sendTransaction(unsignedTx);
+      // Debug: Check if contract exists
+      console.log("Contract address:", project.contract_address);
+      const code = await provider.getCode(project.contract_address);
+      console.log("Contract code length:", code.length);
+      
+      if (code === "0x") {
+        throw new Error("Contract not found at this address. The project may not have been deployed yet.");
+      }
+
+      // Convert amount to wei
+      const amountWei = ethers.parseEther(amount.toString());
+      console.log("Sending", amount, "ETH to contract:", project.contract_address);
+      
+      // Create transaction to send ETH to the contract
+      const txResponse = await signer.sendTransaction({
+        to: project.contract_address,
+        value: amountWei
+        // Let MetaMask handle gas estimation
+      });
 
       setTransactionId(txResponse.hash); // Store the transaction hash
       
