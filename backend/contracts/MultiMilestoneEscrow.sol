@@ -18,15 +18,28 @@ contract MultiMilestoneEscrow {
         string verificationHash; // IPFS hash or proof of completion
     }
     
+    // Donor tracking structure - ENHANCED
+    struct DonorInfo {
+        address donorAddress;
+        uint256 totalContributed;
+        uint256 donationCount;
+        uint256 lastDonationTime;
+        uint256 firstDonationTime;
+    }
+    
     Milestone[] public milestones;
     uint256 public currentMilestoneIndex;
     uint256 public totalAmount;
     uint256 public releasedAmount;
     uint256 public totalDonations; // Track total donations received
     
-    // Donation tracking
+    // Donation tracking - ENHANCED
+    mapping(address => DonorInfo) public donorInfo;
+    address[] public donorAddresses;
+    mapping(address => bool) public isDonor;
+    
+    // Legacy mapping for backward compatibility
     mapping(address => uint256) public donorContributions;
-    address[] public donors;
     
     // Contract states
     enum ContractState { Active, Completed, Cancelled }
@@ -37,7 +50,12 @@ contract MultiMilestoneEscrow {
     event MilestoneCompleted(uint256 indexed milestoneIndex, string verificationHash);
     event MilestoneVerified(uint256 indexed milestoneIndex);
     event FundsReleased(uint256 indexed milestoneIndex, uint256 amount);
-    event DonationReceived(address indexed donor, uint256 amount, uint256 totalDonations);
+    event DonationReceived(
+        address indexed donor, 
+        uint256 amount, 
+        uint256 totalDonations,
+        uint256 donorTotalContribution
+    );
     event ContractCompleted();
     event ContractCancelled();
     
@@ -99,7 +117,166 @@ contract MultiMilestoneEscrow {
         contractState = ContractState.Active;
     }
     
-    // View functions for milestone information
+    // ============================================
+    // TOP DONORS TRACKING FUNCTIONS - NEW
+    // ============================================
+    
+    /**
+     * @dev Get top N donors sorted by total contribution
+     * @param count Number of top donors to return
+     * @return addresses Array of donor addresses
+     * @return contributions Array of total contributions
+     * @return donationCounts Array of donation counts
+     */
+    function getTopDonors(uint256 count) external view returns (
+        address[] memory addresses,
+        uint256[] memory contributions,
+        uint256[] memory donationCounts
+    ) {
+        uint256 totalDonors = donorAddresses.length;
+        uint256 returnCount = count > totalDonors ? totalDonors : count;
+        
+        if (totalDonors == 0) {
+            return (new address[](0), new uint256[](0), new uint256[](0));
+        }
+        
+        // Create arrays with all donors for sorting
+        address[] memory tempAddresses = new address[](totalDonors);
+        uint256[] memory tempContributions = new uint256[](totalDonors);
+        uint256[] memory tempCounts = new uint256[](totalDonors);
+        
+        // Copy all donor data
+        for (uint256 i = 0; i < totalDonors; i++) {
+            address donorAddr = donorAddresses[i];
+            tempAddresses[i] = donorAddr;
+            tempContributions[i] = donorInfo[donorAddr].totalContributed;
+            tempCounts[i] = donorInfo[donorAddr].donationCount;
+        }
+        
+        // Bubble sort (descending by contribution amount)
+        for (uint256 i = 0; i < totalDonors; i++) {
+            for (uint256 j = i + 1; j < totalDonors; j++) {
+                if (tempContributions[j] > tempContributions[i]) {
+                    // Swap contributions
+                    uint256 tempContribution = tempContributions[i];
+                    tempContributions[i] = tempContributions[j];
+                    tempContributions[j] = tempContribution;
+                    
+                    // Swap addresses
+                    address tempAddr = tempAddresses[i];
+                    tempAddresses[i] = tempAddresses[j];
+                    tempAddresses[j] = tempAddr;
+                    
+                    // Swap counts
+                    uint256 tempCount = tempCounts[i];
+                    tempCounts[i] = tempCounts[j];
+                    tempCounts[j] = tempCount;
+                }
+            }
+        }
+        
+        // Return top N donors
+        addresses = new address[](returnCount);
+        contributions = new uint256[](returnCount);
+        donationCounts = new uint256[](returnCount);
+        
+        for (uint256 i = 0; i < returnCount; i++) {
+            addresses[i] = tempAddresses[i];
+            contributions[i] = tempContributions[i];
+            donationCounts[i] = tempCounts[i];
+        }
+        
+        return (addresses, contributions, donationCounts);
+    }
+    
+    /**
+     * @dev Get detailed information about a specific donor
+     * @param _donor Address of the donor
+     * @return Donor information struct
+     */
+    function getDonorDetails(address _donor) external view returns (DonorInfo memory) {
+        require(isDonor[_donor], "Address is not a donor");
+        return donorInfo[_donor];
+    }
+    
+    /**
+     * @dev Get the rank of a specific donor (1 = highest)
+     * @param _donor Address of the donor
+     * @return rank Position in leaderboard (0 if not a donor)
+     */
+    function getDonorRank(address _donor) external view returns (uint256 rank) {
+        if (!isDonor[_donor]) {
+            return 0;
+        }
+        
+        uint256 donorContribution = donorInfo[_donor].totalContributed;
+        rank = 1;
+        
+        // Count how many donors have contributed more
+        for (uint256 i = 0; i < donorAddresses.length; i++) {
+            address otherDonor = donorAddresses[i];
+            if (otherDonor != _donor && donorInfo[otherDonor].totalContributed > donorContribution) {
+                rank++;
+            }
+        }
+        
+        return rank;
+    }
+    
+    /**
+     * @dev Get all donors with their full information
+     * @return Array of all donor info structs
+     */
+    function getAllDonorsInfo() external view returns (DonorInfo[] memory) {
+        DonorInfo[] memory allDonors = new DonorInfo[](donorAddresses.length);
+        
+        for (uint256 i = 0; i < donorAddresses.length; i++) {
+            allDonors[i] = donorInfo[donorAddresses[i]];
+        }
+        
+        return allDonors;
+    }
+    
+    /**
+     * @dev Get project leaderboard statistics
+     * @return totalDonors Total number of unique donors
+     * @return averageDonation Average donation amount
+     * @return largestDonation Largest single donation
+     * @return topDonorAddress Address of top donor
+     */
+    function getLeaderboardStats() external view returns (
+        uint256 totalDonors,
+        uint256 averageDonation,
+        uint256 largestDonation,
+        address topDonorAddress
+    ) {
+        totalDonors = donorAddresses.length;
+        
+        if (totalDonors == 0) {
+            return (0, 0, 0, address(0));
+        }
+        
+        averageDonation = totalDonations / totalDonors;
+        largestDonation = 0;
+        topDonorAddress = address(0);
+        
+        for (uint256 i = 0; i < donorAddresses.length; i++) {
+            address donorAddr = donorAddresses[i];
+            uint256 contribution = donorInfo[donorAddr].totalContributed;
+            
+            if (contribution > largestDonation) {
+                largestDonation = contribution;
+                topDonorAddress = donorAddr;
+            }
+        }
+        
+        return (totalDonors, averageDonation, largestDonation, topDonorAddress);
+    }
+    
+    // ============================================
+    // EXISTING VIEW FUNCTIONS
+    // ============================================
+    
     function getMilestoneCount() public view returns (uint256) {
         return milestones.length;
     }
@@ -151,15 +328,15 @@ contract MultiMilestoneEscrow {
     }
     
     function getDonorCount() public view returns (uint256) {
-        return donors.length;
+        return donorAddresses.length;
     }
     
     function getDonorContribution(address _donor) public view returns (uint256) {
-        return donorContributions[_donor];
+        return donorInfo[_donor].totalContributed;
     }
     
     function getAllDonors() public view returns (address[] memory) {
-        return donors;
+        return donorAddresses;
     }
     
     function getFundingProgress() public view returns (uint256) {
@@ -167,7 +344,10 @@ contract MultiMilestoneEscrow {
         return (totalDonations * 100) / totalAmount; // Returns percentage
     }
     
-    // Milestone completion (can be called by recipient or verifier)
+    // ============================================
+    // MILESTONE MANAGEMENT FUNCTIONS
+    // ============================================
+    
     function completeMilestone(uint256 _milestoneIndex, string memory _verificationHash) 
         public 
         onlyDonorOrVerifier 
@@ -236,7 +416,60 @@ contract MultiMilestoneEscrow {
         return true;
     }
     
-    // Emergency functions
+    // ============================================
+    // DONATION FUNCTIONS - UPDATED
+    // ============================================
+    
+    /**
+     * @dev Internal function to process donations and update donor tracking
+     */
+    function _processDonation() internal {
+        require(contractState == ContractState.Active, "Contract is not active");
+        require(msg.value > 0, "Donation amount must be greater than 0");
+        
+        // If first-time donor, add to tracking
+        if (!isDonor[msg.sender]) {
+            donorAddresses.push(msg.sender);
+            isDonor[msg.sender] = true;
+            
+            donorInfo[msg.sender] = DonorInfo({
+                donorAddress: msg.sender,
+                totalContributed: msg.value,
+                donationCount: 1,
+                lastDonationTime: block.timestamp,
+                firstDonationTime: block.timestamp
+            });
+        } else {
+            // Update existing donor info
+            donorInfo[msg.sender].totalContributed += msg.value;
+            donorInfo[msg.sender].donationCount += 1;
+            donorInfo[msg.sender].lastDonationTime = block.timestamp;
+        }
+        
+        // Update legacy mapping for backward compatibility
+        donorContributions[msg.sender] += msg.value;
+        totalDonations += msg.value;
+        
+        emit DonationReceived(
+            msg.sender, 
+            msg.value, 
+            totalDonations,
+            donorInfo[msg.sender].totalContributed
+        );
+    }
+    
+    receive() external payable {
+        _processDonation();
+    }
+    
+    function donate() external payable {
+        _processDonation();
+    }
+    
+    // ============================================
+    // EMERGENCY FUNCTIONS
+    // ============================================
+    
     function cancelContract() public onlyDonor contractActive {
         contractState = ContractState.Cancelled;
         
@@ -257,35 +490,5 @@ contract MultiMilestoneEscrow {
         
         (bool success, ) = payable(donor).call{value: excess}("");
         require(success, "Transfer failed");
-    }
-    
-    // Function to receive donations
-    receive() external payable {
-        require(contractState == ContractState.Active, "Contract is not active");
-        require(msg.value > 0, "Donation amount must be greater than 0");
-        
-        // Track donation
-        if (donorContributions[msg.sender] == 0) {
-            donors.push(msg.sender); // Add new donor to list
-        }
-        donorContributions[msg.sender] += msg.value;
-        totalDonations += msg.value;
-        
-        emit DonationReceived(msg.sender, msg.value, totalDonations);
-    }
-    
-    // Function to donate with explicit call
-    function donate() external payable {
-        require(contractState == ContractState.Active, "Contract is not active");
-        require(msg.value > 0, "Donation amount must be greater than 0");
-        
-        // Track donation
-        if (donorContributions[msg.sender] == 0) {
-            donors.push(msg.sender); // Add new donor to list
-        }
-        donorContributions[msg.sender] += msg.value;
-        totalDonations += msg.value;
-        
-        emit DonationReceived(msg.sender, msg.value, totalDonations);
     }
 }
