@@ -52,7 +52,13 @@ const ProjectsGallery = () => {
       : projects.filter((p) => (p.ngoName || "Unknown") === selectedOrg);
 
   return (
-    <div className={styles.projectsSection}>
+  <div className={styles.projectsSection}>
+      {/* Header / Hero */}
+      <div className={styles.heroHeader}>
+        <h1 className={styles.heroTitle}>Discover Impact Projects</h1>
+        <p className={styles.heroSubtitle}>Browse initiatives and support milestones that matter.</p>
+      </div>
+
       <div className={styles.titleContainer}>
         <h3 className={styles.projectsTitle}>All Projects</h3>
       </div>
@@ -77,7 +83,7 @@ const ProjectsGallery = () => {
       }
 
       {loadingProjects ? (
-        <p>Loading projects...</p>
+        <div className={styles.loadingCard}>Loading projects...</div>
       ) : filteredProjects.length > 0 ? (
         <ul className={styles.projectsList}>
           {filteredProjects.map((project) => (
@@ -90,12 +96,24 @@ const ProjectsGallery = () => {
                 <p className={styles.projectDescription}>
                     {project.description || "No description available."}
                 </p>
+                <div className={styles.cardFooter}>
+                  <span className={styles.milestoneBadge}>
+                    {Array.isArray(project.milestones) ? project.milestones.length : (project.milestone_count || 0)} Milestones
+                  </span>
+                  {project.total_amount_eth !== undefined && (
+                    <span className={styles.amountBadge}>{project.total_amount_eth} ETH</span>
+                  )}
+                </div>
                 </Link>
             </li>
           ))}
         </ul>
       ) : (
-        <p>No projects found.</p>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🛈</div>
+          <h4>No projects found</h4>
+          <p>Try changing the organisation filter or check back later.</p>
+        </div>
       )}
     </div>
   );
