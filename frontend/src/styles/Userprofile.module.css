@@ -5,28 +5,77 @@
   margin: 2rem 0;
   padding: 2rem 3rem;
   border-radius: 12px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Raleway', sans-serif;
   color: #2c3e50;
   background: #fefefe;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Hero header */
+.heroHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0.25rem 0;
+}
+
+.heroSubtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
 }
 
 .contentWrapper {
   display: flex;
   flex-direction: column;
-  gap: 3rem;
-  align-items: flex-start;
+  gap: 2rem;
+  align-items: center;
   width: 100%;
   max-width: 100%;
 }
 
+/* Removed two-column layout; using a single wide box now */
+
 /* Left column: Profile */
 .profileSection {
-  flex: 0 0 100%; /* smaller width */
-  /* max-width: 300px; */
-  background: #ffffff;
-  padding: 1.2rem 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+  flex: none;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+  padding: 1.4rem 1.6rem;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.9));
+  box-shadow: 0 20px 40px rgba(0, 124, 138, 0.08);
+  border: 1px solid rgba(0,124,138,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  overflow: hidden;
+}
+
+.profileSection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 16px;
+  padding: 1px; /* gradient border thickness */
+  background: linear-gradient(135deg, rgba(0,124,138,0.4), rgba(255,152,0,0.35));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+}
+
+.profileSection:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 50px rgba(0, 124, 138, 0.12);
+  border-color: rgba(0,124,138,0.25);
 }
 
 /* Right column: Transactions */
@@ -45,6 +94,70 @@
   /* enable horizontal scrolling */
   overflow-x: auto;
   white-space: nowrap;
+}
+
+/* NFT section is now inline inside the profile box; keep button styles below */
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.titleIcon {
+  width: 22px;
+  height: 22px;
+  color: #007C8A;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.nftText {
+  color: #34495e;
+  margin: 0 0 1rem 0;
+}
+
+.nftButton {
+  display: inline-block;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  box-shadow: 0 10px 20px rgba(16, 185, 129, 0.25);
+  border: 1px solid rgba(255,255,255,0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nftButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(16, 185, 129, 0.35);
+}
+
+.sectionDivider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0,124,138,0), rgba(0,124,138,0.3), rgba(0,124,138,0));
+  margin: 1.2rem 0 1rem 0;
+}
+
+.actionRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.loadingCard {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  padding: 1rem;
+  border-radius: 10px;
 }
 
 .titleContainer {
@@ -249,6 +362,11 @@
     max-width: 100%;
     padding: 1.6rem 1.8rem;
   }
+  .actionRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
 }
 
 /* Background colors */
@@ -316,4 +434,18 @@ h3,
   background-color: #4a90e2;
   border-radius: 10px;
   border: 2px solid #e1eaff;
+}
+
+.emptyState {
+  text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  color: #374151;
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }

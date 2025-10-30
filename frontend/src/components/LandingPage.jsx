@@ -31,7 +31,7 @@ const styles = {
     marginBottom: '40px',
   },
   heroHeadlineBase: { // Base for all headline parts
-    fontFamily: "'Montserrat', sans-serif",
+    fontFamily: "'Raleway', sans-serif",
     fontWeight: 700,
     lineHeight: 1.1,
     display: 'block', // Each part on a new line
@@ -50,7 +50,7 @@ const styles = {
     color: '#01B4E4', // Accent Blue
   },
   heroSubheadline: { // Justifying hero subheadline as well
-    fontFamily: "'Open Sans', sans-serif",
+    fontFamily: "'Raleway', sans-serif",
     fontSize: 'clamp(1rem, 2.5vw, 1.25rem)',
     color: '#C0C0C0', 
     maxWidth: '550px',
@@ -66,7 +66,7 @@ const styles = {
     flexWrap: 'wrap',
   },
   ctaButtonBase: {
-    fontFamily: "'Montserrat', sans-serif",
+    fontFamily: "'Raleway', sans-serif",
     padding: '15px 30px',
     fontSize: '1.05em',
     fontWeight: 600,
@@ -138,7 +138,7 @@ const styles = {
     boxShadow: '0 4px 12px rgba(13, 37, 63, 0.06)', // Softer shadow
   },
   statIcon: { fontSize: '2.8em', color: '#01B4E4', marginBottom: '15px' }, // Accent Blue
-  statValue: { fontFamily: "'Montserrat', sans-serif", fontSize: '2.1em', fontWeight: 'bold', color: '#0D253F', margin: '5px 0' }, // Dark Blue
+  statValue: { fontFamily: "'Raleway', sans-serif", fontSize: '2.1em', fontWeight: '800', color: '#0D253F', margin: '5px 0' }, // Dark Blue
   statLabel: { fontSize: '1em', color: '#34495E' }, // Dark Slate Gray
 
   // --- Content Sections (Alternating White and Light Blue-Gray) ---
@@ -148,7 +148,7 @@ const styles = {
     margin: '0 auto',
   },
   sectionHeading: {
-    fontFamily: "'Montserrat', sans-serif",
+    fontFamily: "'Raleway', sans-serif",
     fontSize: 'clamp(2rem, 4.5vw, 2.6rem)',
     fontWeight: 600,
     color: '#0D253F', // Dark Blue
@@ -161,6 +161,7 @@ const styles = {
     backgroundColor: '#01B4E4', margin: '15px auto 0', borderRadius: '2px', // Accent Blue
   },
   paragraph: {
+    fontFamily: "'Raleway', sans-serif",
     fontSize: 'clamp(1rem, 2.5vw, 1.15rem)', color: '#34495E',
     marginBottom: '20px', 
     lineHeight: 1.7,
@@ -188,7 +189,7 @@ const styles = {
     backgroundColor: 'rgba(1, 180, 228, 0.1)', // Lighter Accent Blue background
     display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  cardTitle: { fontFamily: "'Montserrat', sans-serif", fontSize: '1.5em', fontWeight: 600, color: '#0D253F', marginBottom: '15px' }, // Dark Blue
+  cardTitle: { fontFamily: "'Raleway', sans-serif", fontSize: '1.5em', fontWeight: 700, color: '#0D253F', marginBottom: '15px' }, // Dark Blue
 cardText: { 
     fontSize: '1em', color: '#34495E', flexGrow: 1, lineHeight: 1.65,
     textAlign: 'justify', // Added justification
