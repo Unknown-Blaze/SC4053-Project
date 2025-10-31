@@ -42,6 +42,13 @@ class CreateProjectRequest(BaseModel):
     ngoName: str
     verifier_address: str
 
+class MintNFTAfterDonationRequest(BaseModel):
+    donor_address: str
+    project_name: str
+    milestone_name: str  
+    donation_amount: float
+    transaction_hash: str
+
 @router.post("/create-project")
 async def create_project(request: CreateProjectRequest):
     """
@@ -74,7 +81,7 @@ async def create_project(request: CreateProjectRequest):
         # Prepare milestone data for contract
         milestone_names = [m.name for m in request.milestones]
         milestone_descriptions = [m.description for m in request.milestones]
-        milestone_amounts = [int(m.amount * 10**18) for m in request.milestones]  # Convert to wei
+        milestone_amounts = [int(m.amount * 10**18) for m in request.milestones]
         
         print("DEBUG: Creating contract instance")
         # Create contract instance
@@ -133,3 +140,224 @@ async def create_project(request: CreateProjectRequest):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to create project: {str(e)}")
+
+@router.get("/project/{contract_address}/details")
+async def get_project_details(contract_address: str):
+    """
+    Get detailed information about a project including milestones and donation stats
+    """
+    try:
+        checksum_address = w3.to_checksum_address(contract_address)
+        contract = w3.eth.contract(address=checksum_address, abi=MULTI_MILESTONE_ABI)
+        
+        # Get basic contract info
+        recipient = contract.functions.recipient().call()
+        verifier = contract.functions.verifier().call()
+        total_donations = contract.functions.getTotalDonations().call()
+        total_amount = contract.functions.totalAmount().call()
+        donor_count = contract.functions.getDonorCount().call()
+        
+        # Get milestone count
+        milestone_count = contract.functions.getMilestoneCount().call()
+        
+        milestones = []
+        for i in range(milestone_count):
+            milestone = contract.functions.getMilestone(i).call()
+            milestone_data = {
+                "index": i,
+                "name": milestone[0],
+                "description": milestone[1],
+                "amount_wei": milestone[2],
+                "amount_eth": w3.from_wei(milestone[2], 'ether'),
+                "is_completed": milestone[3],
+                "is_verified": milestone[4],
+                "completion_time": milestone[5],
+                "verification_hash": milestone[6]
+            }
+            milestones.append(milestone_data)
+        
+        return {
+            "success": True,
+            "contract_address": checksum_address,
+            "recipient": recipient,
+            "verifier": verifier,
+            "total_donations_wei": total_donations,
+            "total_donations_eth": float(w3.from_wei(total_donations, 'ether')),
+            "total_goal_wei": total_amount,
+            "total_goal_eth": float(w3.from_wei(total_amount, 'ether')),
+            "progress_percentage": (total_donations / total_amount * 100) if total_amount > 0 else 0,
+            "donor_count": donor_count,
+            "milestones": milestones
+        }
+        
+    except Exception as e:
+        print(f"Error getting project details: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get project details: {str(e)}")
+
+@router.get("/project/{contract_address}/top-donors")
+async def get_top_donors(contract_address: str, limit: int = 10):
+    """
+    Get top donors for a specific project
+    """
+    try:
+        checksum_address = w3.to_checksum_address(contract_address)
+        contract = w3.eth.contract(address=checksum_address, abi=MULTI_MILESTONE_ABI)
+        
+        # Get all donors
+        donor_count = contract.functions.getDonorCount().call()
+        all_donors = contract.functions.getAllDonors().call()
+        
+        # Get contribution for each donor
+        donor_data = []
+        for donor_address in all_donors:
+            contribution = contract.functions.getDonorContribution(donor_address).call()
+            donor_data.append({
+                "address": donor_address,
+                "contribution_wei": contribution,
+                "contribution_eth": float(w3.from_wei(contribution, 'ether')),
+                "shortened_address": f"{donor_address[:6]}...{donor_address[-4:]}"
+            })
+        
+        # Sort by contribution (descending)
+        donor_data.sort(key=lambda x: x['contribution_wei'], reverse=True)
+        
+        # Limit results
+        top_donors = donor_data[:limit]
+        
+        # Add rank
+        for i, donor in enumerate(top_donors):
+            donor['rank'] = i + 1
+        
+        return {
+            "success": True,
+            "contract_address": checksum_address,
+            "total_donors": donor_count,
+            "showing": len(top_donors),
+            "top_donors": top_donors
+        }
+        
+    except Exception as e:
+        print(f"Error getting top donors: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get top donors: {str(e)}")
+
+@router.get("/project/{contract_address}/donor-rank/{donor_address}")
+async def get_donor_rank(contract_address: str, donor_address: str):
+    """
+    Get a specific donor's rank in the project leaderboard
+    """
+    try:
+        checksum_contract = w3.to_checksum_address(contract_address)
+        checksum_donor = w3.to_checksum_address(donor_address)
+        contract = w3.eth.contract(address=checksum_contract, abi=MULTI_MILESTONE_ABI)
+        
+        # Get donor's contribution
+        donor_contribution = contract.functions.getDonorContribution(checksum_donor).call()
+        
+        if donor_contribution == 0:
+            return {
+                "success": True,
+                "is_donor": False,
+                "message": "Address has not donated to this project"
+            }
+        
+        # Get all donors and their contributions
+        all_donors = contract.functions.getAllDonors().call()
+        
+        rank = 1
+        for other_donor in all_donors:
+            if other_donor != checksum_donor:
+                other_contribution = contract.functions.getDonorContribution(other_donor).call()
+                if other_contribution > donor_contribution:
+                    rank += 1
+        
+        return {
+            "success": True,
+            "is_donor": True,
+            "donor_address": checksum_donor,
+            "rank": rank,
+            "contribution_wei": donor_contribution,
+            "contribution_eth": float(w3.from_wei(donor_contribution, 'ether')),
+            "total_donors": len(all_donors)
+        }
+        
+    except Exception as e:
+        print(f"Error getting donor rank: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get donor rank: {str(e)}")
+
+@router.post("/project/{contract_address}/mint-certificate")
+async def mint_certificate_after_donation(
+    contract_address: str,
+    request: MintNFTAfterDonationRequest
+):
+    """
+    Mint an NFT certificate after a successful donation
+    This endpoint is called by the frontend after donation transaction is confirmed
+    """
+    try:
+        from routers.nft import mint_donation_certificate, MintDonationNFTRequest
+        
+        # Create NFT minting request with milestone name
+        mint_request = MintDonationNFTRequest(
+            recipient_address=request.donor_address,
+            project_name=request.project_name,
+            milestone_name=request.milestone_name,
+            donation_amount=request.donation_amount,
+            project_contract_address=contract_address,
+            transaction_hash=request.transaction_hash
+        )
+        
+        # Call the NFT minting function
+        result = mint_donation_certificate(mint_request)
+        
+        return {
+            "success": True,
+            "message": "Donation certificate NFT minted successfully",
+            "nft_details": result
+        }
+        
+    except Exception as e:
+        print(f"Error minting certificate: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to mint NFT certificate: {str(e)}")
+
+@router.get("/project/{contract_address}/stats")
+async def get_project_stats(contract_address: str):
+    """
+    Get comprehensive statistics for a project
+    """
+    try:
+        checksum_address = w3.to_checksum_address(contract_address)
+        contract = w3.eth.contract(address=checksum_address, abi=MULTI_MILESTONE_ABI)
+        
+        total_donations = contract.functions.getTotalDonations().call()
+        total_amount = contract.functions.totalAmount().call()
+        donor_count = contract.functions.getDonorCount().call()
+        funding_progress = contract.functions.getFundingProgress().call()
+        
+        # Count completed milestones
+        milestone_count = contract.functions.getMilestoneCount().call()
+        completed_milestones = 0
+        
+        for i in range(milestone_count):
+            milestone = contract.functions.getMilestone(i).call()
+            if milestone[4]:  # is_verified
+                completed_milestones += 1
+        
+        return {
+            "success": True,
+            "contract_address": checksum_address,
+            "stats": {
+                "total_raised_wei": total_donations,
+                "total_raised_eth": float(w3.from_wei(total_donations, 'ether')),
+                "total_goal_wei": total_amount,
+                "total_goal_eth": float(w3.from_wei(total_amount, 'ether')),
+                "funding_progress_percentage": funding_progress,
+                "total_donors": donor_count,
+                "total_milestones": milestone_count,
+                "completed_milestones": completed_milestones,
+                "completion_rate": (completed_milestones / milestone_count * 100) if milestone_count > 0 else 0
+            }
+        }
+        
+    except Exception as e:
+        print(f"Error getting project stats: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get project stats: {str(e)}")
