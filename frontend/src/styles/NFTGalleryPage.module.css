@@ -23,7 +23,7 @@
 }
 
 .galleryTitle {
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #1a2a3a;
   letter-spacing: 0.5px;
@@ -31,10 +31,10 @@
 }
 
 .walletAddress {
-  font-size: 0.75rem;
+  font-size: 0.95rem;
   color: #007C8A;
   background: #eaf2ff;
-  padding: 0.3rem 0.6rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 6px;
   font-family: monospace;
 }
@@ -64,7 +64,7 @@
 }
 
 .statLabel {
-  font-size: 0.7rem;
+  font-size: 0.9rem;
   color: #666;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
@@ -73,7 +73,7 @@
 }
 
 .statValue {
-  font-size: 1.3rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: #1a2a3a;
 }
@@ -86,7 +86,7 @@
   border-radius: 8px;
   margin-bottom: 1.5rem;
   color: #c33;
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 /* Empty State */
@@ -99,7 +99,7 @@
 }
 
 .emptyTitle {
-  font-size: 1.2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #1a2a3a;
   margin-bottom: 0.6rem;
@@ -108,18 +108,18 @@
 .emptyText {
   color: #34495e;
   margin-bottom: 1.5rem;
-  font-size: 0.85rem;
+  font-size: 1.05rem;
 }
 
 .browseButton {
   display: inline-block;
-  padding: 0.6rem 1.2rem;
+  padding: 0.8rem 1.4rem;
   background: #007C8A;
   color: white;
   border-radius: 8px;
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 1rem;
   transition: all 0.2s ease;
   border: 1px solid #007C8A;
 }
@@ -163,12 +163,12 @@
 
 .certificateTitle {
   margin: 0 0 0.6rem 0;
-  font-size: 0.95rem;
+  font-size: 1.15rem;
   font-weight: 600;
 }
 
 .certificateTier {
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   font-weight: 700;
   margin-top: 0.2rem;
 }
@@ -190,7 +190,7 @@
 }
 
 .fieldLabel {
-  font-size: 0.7rem;
+  font-size: 0.85rem;
   color: #666;
   margin-bottom: 0.25rem;
   text-transform: uppercase;
@@ -199,19 +199,19 @@
 }
 
 .fieldValue {
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #1a2a3a;
 }
 
 .amountValue {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: #007C8A;
 }
 
 .tokenId {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: #34495e;
   font-family: monospace;
 }
@@ -219,12 +219,12 @@
 .etherscanLink {
   display: block;
   text-align: center;
-  padding: 0.5rem;
+  padding: 0.6rem;
   background: #eaf2ff;
   border-radius: 8px;
   color: #007C8A;
   text-decoration: none;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   margin-top: 0.8rem;
   transition: all 0.2s ease;
   font-weight: 600;

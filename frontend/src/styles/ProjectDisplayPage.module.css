@@ -83,7 +83,7 @@
 .viewAllLink {
   color: #01B4E4; /* Accent Blue */
   text-decoration: none;
-  font-size: 0.9em;
+  font-size: 1rem;
   font-weight: 500;
 }
 .viewAllLink:hover {
@@ -124,18 +124,18 @@
 .txName {
   font-weight: 500;
   color: #FFFFFF;
-  font-size: 0.95em;
+  font-size: 1.05em;
   margin-bottom: 2px;
 }
 
 .txEmail { /* Using this for sub-text */
-  font-size: 0.8em;
+  font-size: 0.95em;
   color: #A0B0C0; /* Lighter gray */
 }
 
 .txAmount {
   font-weight: 600;
-  font-size: 1em;
+  font-size: 1.1em;
   color: #FFFFFF;
   margin-left: 10px; /* Space from info */
   white-space: nowrap;
@@ -151,7 +151,7 @@
 .txErrorMessage, .noTransactions {
     padding: 15px;
     text-align: center;
-    font-size: 0.9em;
+    font-size: 1rem;
     color: #A0B0C0;
     background-color: rgba(255,255,255,0.05);
     border-radius: 4px;
@@ -172,10 +172,10 @@
   background-color: #f0ad4e; /* Orange warning color */
   color: white;
   border: none;
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9em;
+  font-size: 1rem;
   display: flex;
   align-items: center;
   transition: background-color 0.2s;
@@ -265,7 +265,7 @@
 }
 
 .milestoneStatusText {
-  font-size: 0.85em;
+  font-size: 1rem;
   color: #546E7A;
   margin-bottom: 8px;
   font-style: italic;
@@ -276,9 +276,9 @@
 
 
 .milestoneDetails {
-  font-size: 0.9em;
+  font-size: 1.05em;
   color: #34495E;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .spinner {

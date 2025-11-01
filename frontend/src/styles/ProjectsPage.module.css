@@ -142,19 +142,19 @@
 
 /* Organisation name (small accent text) */
 .orgName {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #007C8A;
   background: #eaf2ff;
-  padding: 0.2rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 6px;
   white-space: nowrap;
 }
 
 /* Project description */
 .projectDescription {
-  font-size: 0.9rem;
-  line-height: 1.4;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: #34495e;
   margin: 0;
 }
@@ -169,18 +169,18 @@
 .milestoneBadge {
   background: #eef2ff;
   color: #3730a3;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
 .amountBadge {
   background: #ecfeff;
   color: #0e7490;
-  padding: 0.25rem 0.5rem;
+  padding: 0.3rem 0.6rem;
   border-radius: 8px;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
 }
 
@@ -219,8 +219,8 @@
   background: #f0f4ff;
   border: 1px solid #d0dbf7;
   color: #1a2a3a;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem;
+  font-size: 1rem;
   font-weight: 600;
   border-radius: 8px;
   cursor: pointer;

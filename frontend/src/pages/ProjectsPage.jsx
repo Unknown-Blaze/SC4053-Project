@@ -1,8 +1,6 @@
 // src/pages/ProjectDisplayPage.jsx
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { collection, getDocs, query } from 'firebase/firestore';
-import { db } from '../firebase/config';
 import styles from '../styles/ProjectsPage.module.css';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -17,14 +15,16 @@ const ProjectsGallery = () => {
     const loadProjects = async () => {
       setLoadingProjects(true);
       try {
-        const projectsRef = collection(db, "charity_projects");
-        const q = query(projectsRef);
-        const querySnapshot = await getDocs(q);
-        const projectsData = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setProjects(projectsData);
+        // Fetch projects from backend API (which includes IPFS metadata)
+        const response = await fetch('http://127.0.0.1:8000/projects/all');
+        const data = await response.json();
+        
+        if (data.success) {
+          setProjects(data.projects);
+          console.log(`✅ Loaded ${data.count} projects from backend (with IPFS support)`);
+        } else {
+          console.error("Failed to fetch projects");
+        }
       } catch (error) {
         console.error("Error fetching projects:", error);
       } finally {

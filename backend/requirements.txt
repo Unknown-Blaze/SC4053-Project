@@ -5,3 +5,7 @@ python-dotenv
 pydantic
 email-validator
 py-solc-x
+ipfshttpclient
+requests
+pillow
+firebase-admin
