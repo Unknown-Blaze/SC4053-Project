@@ -58,10 +58,8 @@ def get_latest_transactions(address: str):
         # --- 5. Format Successful Response ---
         if data.get("status") == "1" or isinstance(result, list):
             formatted_transactions = []
+            failed_count = 0
             for tx in result:
-                # Debug: Print transaction status fields
-                print(f"Transaction {tx.get('hash', 'unknown')}: isError={tx.get('isError')}, txreceipt_status={tx.get('txreceipt_status')}")
-                
                 # Only include successful transactions (status = 1)
                 if tx.get('isError') == '0' and tx.get('txreceipt_status') == '1':
                     formatted_transactions.append({
@@ -72,6 +70,13 @@ def get_latest_transactions(address: str):
                         'blockNumber': tx.get('blockNumber'),
                         'timeStamp': tx.get('timeStamp')
                     })
+                else:
+                    failed_count += 1
+            
+            # Only log summary if there were failed transactions (for debugging)
+            if failed_count > 0:
+                print(f"Filtered out {failed_count} failed/unsuccessful transactions for address {address}")
+            
             return {"transactions": formatted_transactions}
 
         # --- 6. Handle No Transactions ---

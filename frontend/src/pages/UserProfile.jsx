@@ -1,11 +1,10 @@
 // src/pages/UserProfile.jsx
 import React, { useState, useEffect } from 'react';
-import { FiUser, FiImage } from 'react-icons/fi';
+import { FiUser } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import styles from '../styles/Userprofile.module.css';
-import { Link } from 'react-router-dom';
 
 const UserProfile = () => {
     const { currentUserProfile, updateUserProfile } = useAuth();
@@ -188,19 +187,6 @@ const UserProfile = () => {
                             <button className={styles.editButton} onClick={() => setIsEditing(true)}>
                                 Edit Profile
                             </button>
-
-                            {/* Inline NFT access within the same box */}
-                            <div className={styles.sectionDivider} />
-                            <div className={styles.actionRow}>
-                                <div>
-                                    <div className={styles.titleRow}>
-                                        <FiImage className={styles.titleIcon} />
-                                        <h4 className={styles.profileTitle} style={{ fontSize: '1.2rem' }}>Your NFT Gallery</h4>
-                                    </div>
-                                    <div className={styles.subtitle}>View NFTs minted for your donations.</div>
-                                </div>
-                                <Link to="/nft" className={styles.nftButton}>Open NFT Gallery</Link>
-                            </div>
                         </>
                     ) : (
                         <div className={styles.editForm}>
@@ -222,19 +208,6 @@ const UserProfile = () => {
                                 <button className={styles.cancelButton} onClick={handleCancel}>
                                     Cancel
                                 </button>
-                            </div>
-
-                            {/* Inline NFT access within the same box (edit mode) */}
-                            <div className={styles.sectionDivider} />
-                            <div className={styles.actionRow}>
-                                <div>
-                                    <div className={styles.titleRow}>
-                                        <FiImage className={styles.titleIcon} />
-                                        <h4 className={styles.profileTitle} style={{ fontSize: '1.2rem' }}>Your NFT Gallery</h4>
-                                    </div>
-                                    <div className={styles.subtitle}>View NFTs minted for your donations.</div>
-                                </div>
-                                <Link to="/nft" className={styles.nftButton}>Open NFT Gallery</Link>
                             </div>
                         </div>
                     )}

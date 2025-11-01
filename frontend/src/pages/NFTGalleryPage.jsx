@@ -21,19 +21,29 @@ const NFTGalleryPage = () => {
 
   const fetchNFTGallery = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch(
         `http://localhost:8000/nft/gallery/${currentUserProfile.walletAddress}`
       );
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
+        throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       
       if (data.success) {
-        setCertificates(data.certificates);
+        setCertificates(data.certificates || []);
       } else {
-        setError('Failed to load NFT gallery');
+        setError(data.message || 'Failed to load NFT gallery');
       }
+      setLoading(false);
     } catch (err) {
       console.error('Error fetching NFT gallery:', err);
-      setError('Failed to load NFT gallery');
+      setError(err.message || 'Failed to load NFT gallery');
+      setLoading(false);
     }
   };
 
@@ -42,15 +52,21 @@ const NFTGalleryPage = () => {
       const response = await fetch(
         `http://localhost:8000/nft/stats/${currentUserProfile.walletAddress}`
       );
+      
+      if (!response.ok) {
+        // Don't set error for stats, just log it
+        console.error('Error fetching donor stats:', response.status);
+        return;
+      }
+      
       const data = await response.json();
       
       if (data.success) {
         setStats(data.stats);
       }
-      setLoading(false);
     } catch (err) {
       console.error('Error fetching donor stats:', err);
-      setLoading(false);
+      // Don't set error for stats, just log it
     }
   };
 

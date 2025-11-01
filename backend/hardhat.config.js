@@ -1,5 +1,4 @@
 require("@nomicfoundation/hardhat-toolbox");
-require("./tasks/compile-export");
 
 module.exports = {
   solidity: {
