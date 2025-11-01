@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import styles from '../styles/NFTGalleryPage.module.css';
 
 const NFTGalleryPage = () => {
   const { currentUserProfile } = useAuth();
@@ -55,22 +56,9 @@ const NFTGalleryPage = () => {
 
   if (!currentUserProfile) {
     return (
-      <div style={{
-        maxWidth: '1200px',
-        margin: '50px auto',
-        padding: '40px',
-        textAlign: 'center'
-      }}>
+      <div className={styles.loginPrompt}>
         <h2>Please log in to view your NFT gallery</h2>
-        <Link to="/login" style={{
-          display: 'inline-block',
-          marginTop: '20px',
-          padding: '12px 24px',
-          background: '#4CAF50',
-          color: 'white',
-          borderRadius: '8px',
-          textDecoration: 'none'
-        }}>
+        <Link to="/login" className={styles.loginButton}>
           Log In
         </Link>
       </div>
@@ -79,48 +67,28 @@ const NFTGalleryPage = () => {
 
   if (loading) {
     return (
-      <div style={{
-        maxWidth: '1200px',
-        margin: '50px auto',
-        padding: '40px',
-        textAlign: 'center'
-      }}>
-        <div style={{fontSize: '2em'}}>⏳</div>
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingIcon}>⏳</div>
         <p>Loading your NFT gallery...</p>
       </div>
     );
   }
 
   return (
-    <div style={{
-      maxWidth: '1200px',
-      margin: '50px auto',
-      padding: '20px'
-    }}>
+    <div className={styles.gallerySection}>
       {/* Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        padding: '40px',
-        borderRadius: '15px',
-        marginBottom: '30px'
-      }}>
-        <h1 style={{margin: '0 0 10px 0', fontSize: '2.5em'}}>
+      <div className={styles.titleContainer}>
+        <h1 className={styles.galleryTitle}>
           🎖️ Your Donation Certificates
         </h1>
-        <p style={{margin: 0, opacity: 0.9}}>
-          {currentUserProfile.walletAddress.slice(0, 6)}...{currentUserProfile.walletAddress.slice(-4)}
-        </p>
+        <span className={styles.walletAddress}>
+          {currentUserProfile.walletAddress}
+        </span>
       </div>
 
       {/* Stats Overview */}
       {stats && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: '20px',
-          marginBottom: '40px'
-        }}>
+        <div className={styles.statsGrid}>
           <StatCard
             icon="💎"
             label="Overall Tier"
@@ -146,48 +114,25 @@ const NFTGalleryPage = () => {
 
       {/* Error Message */}
       {error && (
-        <div style={{
-          padding: '20px',
-          background: '#fee',
-          border: '1px solid #fcc',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          color: '#c33'
-        }}>
+        <div className={styles.errorMessage}>
           {error}
         </div>
       )}
 
       {/* Certificates Grid */}
       {certificates.length === 0 ? (
-        <div style={{
-          textAlign: 'center',
-          padding: '60px',
-          background: '#f9f9f9',
-          borderRadius: '15px'
-        }}>
-          <div style={{fontSize: '4em', marginBottom: '20px'}}>📭</div>
-          <h2>No certificates yet</h2>
-          <p style={{color: '#666', marginBottom: '30px'}}>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>🔭</div>
+          <h2 className={styles.emptyTitle}>No certificates yet</h2>
+          <p className={styles.emptyText}>
             Start making donations to earn your first certificate NFT!
           </p>
-          <Link to="/projects" style={{
-            display: 'inline-block',
-            padding: '12px 24px',
-            background: '#4CAF50',
-            color: 'white',
-            borderRadius: '8px',
-            textDecoration: 'none'
-          }}>
+          <Link to="/projects" className={styles.browseButton}>
             Browse Projects
           </Link>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-          gap: '25px'
-        }}>
+        <div className={styles.certificatesGrid}>
           {certificates.map((cert) => (
             <CertificateCard key={cert.token_id} certificate={cert} />
           ))}
@@ -199,30 +144,10 @@ const NFTGalleryPage = () => {
 
 // Stat Card Component
 const StatCard = ({ icon, label, value }) => (
-  <div style={{
-    background: 'white',
-    padding: '25px',
-    borderRadius: '12px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    textAlign: 'center'
-  }}>
-    <div style={{fontSize: '2.5em', marginBottom: '10px'}}>{icon}</div>
-    <div style={{
-      fontSize: '0.85em',
-      color: '#666',
-      marginBottom: '5px',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px'
-    }}>
-      {label}
-    </div>
-    <div style={{
-      fontSize: '1.5em',
-      fontWeight: 'bold',
-      color: '#333'
-    }}>
-      {value}
-    </div>
+  <div className={styles.statCard}>
+    <div className={styles.statIcon}>{icon}</div>
+    <div className={styles.statLabel}>{label}</div>
+    <div className={styles.statValue}>{value}</div>
   </div>
 );
 
@@ -237,94 +162,42 @@ const CertificateCard = ({ certificate }) => {
   const tier = getAttributeValue('Tier');
   const project = getAttributeValue('Project');
   const txHash = getAttributeValue('Transaction Hash');
+  const milestone = getAttributeValue('Milestone');
 
   return (
-    <div style={{
-      background: 'white',
-      borderRadius: '15px',
-      overflow: 'hidden',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-      cursor: 'pointer'
-    }}
-    onMouseEnter={(e) => {
-      e.currentTarget.style.transform = 'translateY(-5px)';
-      e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
-    }}
-    onMouseLeave={(e) => {
-      e.currentTarget.style.transform = 'translateY(0)';
-      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
-    }}>
+    <div className={styles.certificateCard}>
       {/* Certificate Header */}
-      <div style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '30px 20px',
-        textAlign: 'center',
-        color: 'white'
-      }}>
-        <div style={{fontSize: '3em', marginBottom: '10px'}}>🎖️</div>
-        <h3 style={{margin: '0 0 10px 0', fontSize: '1.2em'}}>
+      <div className={styles.certificateHeader}>
+        <div className={styles.certificateIcon}>🎖️</div>
+        <h3 className={styles.certificateTitle}>
           Donation Certificate
         </h3>
-        <div style={{
-          fontSize: '1.5em',
-          fontWeight: 'bold',
-          marginTop: '10px'
-        }}>
+        <div className={styles.certificateTier}>
           {tier}
         </div>
       </div>
 
       {/* Certificate Body */}
-      <div style={{padding: '20px'}}>
-        <div style={{marginBottom: '15px'}}>
-          <div style={{
-            fontSize: '0.85em',
-            color: '#666',
-            marginBottom: '5px'
-          }}>
-            Project
+      <div className={styles.certificateBody}>
+        <div className={styles.fieldsGrid}>
+          <div className={styles.certificateField}>
+            <div className={styles.fieldLabel}>Project</div>
+            <div className={styles.fieldValue}>{project}</div>
           </div>
-          <div style={{
-            fontSize: '1em',
-            fontWeight: '500',
-            color: '#333'
-          }}>
-            {project}
-          </div>
-        </div>
 
-        <div style={{marginBottom: '15px'}}>
-          <div style={{
-            fontSize: '0.85em',
-            color: '#666',
-            marginBottom: '5px'
-          }}>
-            Amount Donated
+          <div className={styles.certificateField}>
+            <div className={styles.fieldLabel}>Milestone</div>
+            <div className={styles.fieldValue}>{milestone}</div>
           </div>
-          <div style={{
-            fontSize: '1.3em',
-            fontWeight: 'bold',
-            color: '#4CAF50'
-          }}>
-            {donationAmount} ETH
-          </div>
-        </div>
 
-        <div style={{marginBottom: '15px'}}>
-          <div style={{
-            fontSize: '0.85em',
-            color: '#666',
-            marginBottom: '5px'
-          }}>
-            Token ID
+          <div className={styles.certificateField}>
+            <div className={styles.fieldLabel}>Amount Donated</div>
+            <div className={styles.amountValue}>{donationAmount} ETH</div>
           </div>
-          <div style={{
-            fontSize: '0.9em',
-            color: '#333',
-            fontFamily: 'monospace'
-          }}>
-            #{certificate.token_id}
+
+          <div className={styles.certificateField}>
+            <div className={styles.fieldLabel}>Token ID</div>
+            <div className={styles.tokenId}>#{certificate.token_id}</div>
           </div>
         </div>
 
@@ -333,17 +206,7 @@ const CertificateCard = ({ certificate }) => {
             href={`https://sepolia.etherscan.io/tx/${txHash}`}
             target="_blank"
             rel="noopener noreferrer"
-            style={{
-              display: 'block',
-              textAlign: 'center',
-              padding: '10px',
-              background: '#f0f0f0',
-              borderRadius: '8px',
-              color: '#667eea',
-              textDecoration: 'none',
-              fontSize: '0.9em',
-              marginTop: '15px'
-            }}
+            className={styles.etherscanLink}
           >
             View on Etherscan →
           </a>

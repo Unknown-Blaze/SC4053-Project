@@ -287,7 +287,7 @@ const ProjectDonationPage = () => {
           <div className={classes.txDetails}>
             <strong>Donation Transaction:</strong>
             <a href={`https://sepolia.etherscan.io/tx/${transactionId}`} target="_blank" rel="noopener noreferrer">
-              {`${transactionId.slice(0, 10)}...${transactionId.slice(-10)}`}
+              {`${transactionId.slice(0, 15)}...${transactionId.slice(-15)}`}
             </a>
           </div>
 
@@ -314,7 +314,7 @@ const ProjectDonationPage = () => {
                   </a>
                 )}
                 <Link 
-                  to="/nft-gallery" 
+                  to="/nft" 
                   style={{
                     display: 'inline-block',
                     marginTop: '15px',

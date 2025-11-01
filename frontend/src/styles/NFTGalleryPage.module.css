@@ -1,0 +1,341 @@
+/* src/styles/NFTGalleryPage.module.css */
+
+.gallerySection {
+  max-width: 100%;
+  margin: 2rem 2rem;
+  padding: 2.5rem 2.5rem 4rem 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #2c3e50;
+  background: #fefefe;
+}
+
+/* Title container */
+.titleContainer {
+  margin-bottom: 1.2rem;
+  border-bottom: 2px solid #007C8A;
+  padding-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.galleryTitle {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1a2a3a;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.walletAddress {
+  font-size: 0.75rem;
+  color: #007C8A;
+  background: #eaf2ff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-family: monospace;
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.statCard {
+  background: #f9fbff;
+  padding: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+  text-align: center;
+  border: 1px solid #e1eaff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.15);
+  border-color: #007C8A;
+}
+
+.statIcon {
+  font-size: 2em;
+  margin-bottom: 0.4rem;
+}
+
+.statLabel {
+  font-size: 0.7rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.statValue {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a2a3a;
+}
+
+/* Error Message */
+.errorMessage {
+  padding: 1rem;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  color: #c33;
+  font-size: 0.9rem;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: #f9fbff;
+  border-radius: 12px;
+  border: 1px solid #e1eaff;
+}
+
+.emptyIcon {
+  font-size: 3em;
+  margin-bottom: 0.8rem;
+}
+
+.emptyTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1a2a3a;
+  margin-bottom: 0.4rem;
+}
+
+.emptyText {
+  color: #34495e;
+  margin-bottom: 1.5rem;
+  font-size: 0.85rem;
+}
+
+.browseButton {
+  display: inline-block;
+  padding: 0.6rem 1.2rem;
+  background: #007C8A;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  border: 1px solid #007C8A;
+}
+
+.browseButton:hover {
+  background: #006070;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 124, 138, 0.2);
+}
+
+/* Certificates Grid */
+.certificatesGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 1.2rem;
+}
+
+.certificateCard {
+  background: #f9fbff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #e1eaff;
+  cursor: pointer;
+}
+
+.certificateCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(74, 144, 226, 0.15);
+  border-color: #007C8A;
+}
+
+.certificateHeader {
+  background: linear-gradient(135deg, #007C8A 0%, #005f6b 100%);
+  padding: 1.5rem 1.2rem;
+  text-align: center;
+  color: white;
+}
+
+.certificateIcon {
+  font-size: 2.5em;
+  margin-bottom: 0.4rem;
+}
+
+.certificateTitle {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.certificateTier {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.4rem;
+}
+
+.certificateBody {
+  padding: 1.2rem;
+}
+
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.certificateField {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldLabel {
+  font-size: 0.7rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.fieldValue {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #1a2a3a;
+}
+
+.amountValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #007C8A;
+}
+
+.tokenId {
+  font-size: 0.75rem;
+  color: #34495e;
+  font-family: monospace;
+}
+
+.etherscanLink {
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  background: #eaf2ff;
+  border-radius: 8px;
+  color: #007C8A;
+  text-decoration: none;
+  font-size: 0.75rem;
+  margin-top: 0.8rem;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  border: 1px solid #d0dbf7;
+}
+
+.etherscanLink:hover {
+  background: #d0dbf7;
+  border-color: #007C8A;
+}
+
+/* Login Prompt */
+.loginPrompt {
+  max-width: 100%;
+  margin: 2rem 2rem;
+  padding: 4rem 3rem;
+  text-align: center;
+  background: #fefefe;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+.loginPrompt h2 {
+  color: #1a2a3a;
+  font-size: 1.7rem;
+  margin-bottom: 1.5rem;
+}
+
+.loginButton {
+  display: inline-block;
+  margin-top: 1rem;
+  padding: 0.7rem 1.5rem;
+  background: #007C8A;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 1px solid #007C8A;
+}
+
+.loginButton:hover {
+  background: #006070;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 124, 138, 0.2);
+}
+
+/* Loading Container */
+.loadingContainer {
+  max-width: 100%;
+  margin: 2rem 2rem;
+  padding: 4rem 3rem;
+  text-align: center;
+  background: #fefefe;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.15);
+}
+
+.loadingIcon {
+  font-size: 2em;
+  margin-bottom: 1rem;
+  color: #007C8A;
+}
+
+.loadingContainer p {
+  color: #34495e;
+  font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .certificatesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .certificatesGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gallerySection {
+    margin: 1rem;
+    padding: 2rem 1.5rem;
+  }
+  
+  .titleContainer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

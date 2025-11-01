@@ -23,7 +23,7 @@ class MintDonationNFTRequest(BaseModel):
     project_contract_address: str
     transaction_hash: str
 
-def get_ngo_private_key():
+def get_platform_private_key():
     pk = os.getenv("NGO_PRIVATE_KEY")
     if not pk:
         raise ValueError("NGO_PRIVATE_KEY not found in .env file")
@@ -99,7 +99,7 @@ def mint_token(request: MintRequest):
     Basic NFT minting endpoint (for manual minting)
     """
     try:
-        ngo_private_key = get_ngo_private_key()
+        ngo_private_key = get_platform_private_key()
         ngo_account = w3.eth.account.from_key(ngo_private_key)
         nft_contract = w3.eth.contract(address=w3.to_checksum_address(NFT_CONTRACT_ADDRESS), abi=NFT_ABI)
         
@@ -135,10 +135,10 @@ def mint_donation_certificate(request: MintDonationNFTRequest):
         # Validate addresses
         if not w3.is_address(request.recipient_address):
             raise HTTPException(status_code=400, detail="Invalid recipient address")
-        
+
         if not w3.is_address(request.project_contract_address):
             raise HTTPException(status_code=400, detail="Invalid project contract address")
-        
+
         # Create metadata with donation details
         token_uri = create_nft_metadata(
             request.project_name,
@@ -147,26 +147,37 @@ def mint_donation_certificate(request: MintDonationNFTRequest):
             request.recipient_address,
             request.transaction_hash
         )
-        
-        # Mint the NFT
-        ngo_private_key = get_ngo_private_key()
+
+        # Load NGO account
+        ngo_private_key = get_platform_private_key()
         ngo_account = w3.eth.account.from_key(ngo_private_key)
-        nft_contract = w3.eth.contract(address=w3.to_checksum_address(NFT_CONTRACT_ADDRESS), abi=NFT_ABI)
-        
+        nft_contract = w3.eth.contract(
+            address=w3.to_checksum_address(NFT_CONTRACT_ADDRESS),
+            abi=NFT_ABI
+        )
+
+        # Estimate gas dynamically
+        estimated_gas = nft_contract.functions.safeMint(
+            w3.to_checksum_address(request.recipient_address),
+            token_uri
+        ).estimate_gas({'from': ngo_account.address})
+
+        # Build transaction (add 20% buffer)
         tx = nft_contract.functions.safeMint(
             w3.to_checksum_address(request.recipient_address),
             token_uri
         ).build_transaction({
             'from': ngo_account.address,
             'nonce': w3.eth.get_transaction_count(ngo_account.address),
-            'gas': 500000,
+            'gas': int(estimated_gas * 1.2),
             'gasPrice': w3.eth.gas_price
         })
-        
+
+        # Sign and send
         signed_tx = w3.eth.account.sign_transaction(tx, private_key=ngo_private_key)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
-        
+
         return {
             "success": True,
             "message": "Donation certificate NFT minted successfully",
@@ -180,6 +191,7 @@ def mint_donation_certificate(request: MintDonationNFTRequest):
                 "original_tx": request.transaction_hash
             }
         }
+
     except Exception as e:
         print(f"Error minting donation NFT: {e}")
         import traceback
@@ -197,7 +209,8 @@ def get_nft_gallery(address: str):
         
         # Get balance
         balance = nft_contract.functions.balanceOf(checksum_address).call()
-        
+        print(f"Balance: {balance}")
+
         certificates = []
         for i in range(balance):
             try:
@@ -217,6 +230,7 @@ def get_nft_gallery(address: str):
                     except Exception as e:
                         print(f"Error parsing metadata for token {token_id}: {e}")
                         metadata = None
+                print(f"Metadata : {metadata}")
                 
                 # Format certificate data
                 certificate = {
@@ -228,11 +242,13 @@ def get_nft_gallery(address: str):
                     "attributes": metadata.get("attributes", []) if metadata else []
                 }
                 
+                print(f"Certificate : {certificate}")
                 certificates.append(certificate)
             except Exception as e:
                 print(f"Error processing token {i}: {e}")
                 continue
         
+        print(f"All Certificates : {certificates}")
         return {
             "success": True,
             "address": checksum_address,
