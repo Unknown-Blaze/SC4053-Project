@@ -25,6 +25,25 @@
     background: #fefefe;
   }
 
+/* Hero header */
+.heroHeader {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.heroTitle {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 0.25rem 0;
+}
+
+.heroSubtitle {
+  color: #6b7280;
+  font-size: 1rem;
+  margin: 0;
+}
+
 /* Webkit scrollbars */
 .projectsSection::-webkit-scrollbar {
   width: 8px;
@@ -67,6 +86,16 @@
   padding: 0;
   margin: 0;
   list-style: none;
+}
+
+@media (max-width: 1200px) {
+  .projectsList { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 900px) {
+  .projectsList { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+  .projectsList { grid-template-columns: 1fr; }
 }
 
 /* Remove list item background since the card itself has styling */
@@ -128,6 +157,53 @@
   line-height: 1.4;
   color: #34495e;
   margin: 0;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+}
+
+.milestoneBadge {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.amountBadge {
+  background: #ecfeff;
+  color: #0e7490;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.loadingCard {
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  padding: 1rem;
+  border-radius: 10px;
+}
+
+.emptyState {
+  text-align: center;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 2rem;
+  color: #374151;
+}
+
+.emptyIcon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Filter container */

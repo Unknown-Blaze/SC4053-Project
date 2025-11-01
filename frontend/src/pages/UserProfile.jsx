@@ -1,5 +1,6 @@
 // src/pages/UserProfile.jsx
 import React, { useState, useEffect } from 'react';
+import { FiUser, FiImage } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
@@ -145,11 +146,21 @@ const UserProfile = () => {
 
     return (
         <div className={styles.userProfileContainer}>
+            {/* Header / Hero */}
+            <div className={styles.heroHeader}>
+                <h1 className={styles.heroTitle}>Profile Page</h1>
+                <p className={styles.heroSubtitle}>Manage your identity and view recent activity.</p>
+            </div>
+
             <div className={styles.contentWrapper}>
-                {/* Profile Information */}
+                {/* Profile Information (single wide box) */}
                 <div className={styles.profileSection}>
                     <div className={styles.titleContainer}>
-                        <h3 className={styles.profileTitle}>Personal Information</h3>
+                        <div className={styles.titleRow}>
+                            <FiUser className={styles.titleIcon} />
+                            <h3 className={styles.profileTitle}>Personal Information</h3>
+                        </div>
+                        <div className={styles.subtitle}>Update your display name and view your wallet address.</div>
                     </div>
                     {!isEditing ? (
                         <>
@@ -177,6 +188,19 @@ const UserProfile = () => {
                             <button className={styles.editButton} onClick={() => setIsEditing(true)}>
                                 Edit Profile
                             </button>
+
+                            {/* Inline NFT access within the same box */}
+                            <div className={styles.sectionDivider} />
+                            <div className={styles.actionRow}>
+                                <div>
+                                    <div className={styles.titleRow}>
+                                        <FiImage className={styles.titleIcon} />
+                                        <h4 className={styles.profileTitle} style={{ fontSize: '1.2rem' }}>Your NFT Gallery</h4>
+                                    </div>
+                                    <div className={styles.subtitle}>View NFTs minted for your donations.</div>
+                                </div>
+                                <Link to="/nft" className={styles.nftButton}>Open NFT Gallery</Link>
+                            </div>
                         </>
                     ) : (
                         <div className={styles.editForm}>
@@ -199,45 +223,20 @@ const UserProfile = () => {
                                     Cancel
                                 </button>
                             </div>
+
+                            {/* Inline NFT access within the same box (edit mode) */}
+                            <div className={styles.sectionDivider} />
+                            <div className={styles.actionRow}>
+                                <div>
+                                    <div className={styles.titleRow}>
+                                        <FiImage className={styles.titleIcon} />
+                                        <h4 className={styles.profileTitle} style={{ fontSize: '1.2rem' }}>Your NFT Gallery</h4>
+                                    </div>
+                                    <div className={styles.subtitle}>View NFTs minted for your donations.</div>
+                                </div>
+                                <Link to="/nft" className={styles.nftButton}>Open NFT Gallery</Link>
+                            </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Transactions List (use projects styling) */}
-                <div className={styles.transactionsSection}>
-                    <div className={styles.transactionsContainer}>
-                        <h3 className={styles.transactionsTitle}>Latest Transactions</h3>
-                    </div>
-                    {loadingTransactions ? (
-                        <p>Loading transactions...</p>
-                    ) : transactions.length > 0 ? (
-                        <ul className={styles.transactionsList}>
-                            {transactions.map(transaction => (
-                                <li key={transaction.hash} className={styles.transactionItem}>
-                                    <p>
-                                        <strong>Hash:</strong>{""}
-                                        <a
-                                            href={`https://sepolia.etherscan.io/tx/${transaction.hash}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            {transaction.hash.slice(0,30)}...
-                                        </a>
-                                    </p>
-
-                                     <p><strong>From:</strong> {transaction.from}</p>
-                                     <p><strong>To:</strong> {transaction.to}</p>
-                                     <p><strong>Value:</strong> {transaction.value_ether} ETH</p>
-                                     <p><strong>Block:</strong> {transaction.blockNumber}</p>
-                                     <p>
-                                        <strong>Time:</strong>{" "}
-                                        {new Date(transaction.timeStamp * 1000).toLocaleString()}
-                                    </p>
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No transactions found.</p>
                     )}
                 </div>
             </div>

@@ -66,18 +66,39 @@ def compile_all_contracts():
                     output_values=['abi', 'bin'],
                     import_remappings=import_remappings
                 )
-                
-                contract_interface = compiled_sol[f'<stdin>:{contract_name}']
-                
+
+                # Determine which contract to extract from this source.
+                # Prefer the first contract declared in the file contents.
+                import re
+                declared_name_match = re.search(r"^[\t ]*contract\s+([A-Za-z_][A-Za-z0-9_]*)\b", source, flags=re.MULTILINE)
+                declared_name = declared_name_match.group(1) if declared_name_match else None
+
+                contract_keys = list(compiled_sol.keys())
+                preferred_key = None
+                if declared_name:
+                    preferred_key = next((k for k in contract_keys if k.endswith(f":{declared_name}")), None)
+                if preferred_key is None:
+                    preferred_key = next((k for k in contract_keys if k.endswith(f":{contract_name}")), None)
+                if preferred_key is None:
+                    if len(contract_keys) == 1:
+                        preferred_key = contract_keys[0]
+                    else:
+                        preferred_key = contract_keys[0]
+                        expected = declared_name or contract_name
+                        print(f"  => Warning: expected contract '{expected}' not found; using '{preferred_key.split(':', 1)[1]}'")
+
+                contract_interface = compiled_sol[preferred_key]
+                actual_name = preferred_key.split(':', 1)[1]
+
                 output_data = {
                     'abi': contract_interface['abi'],
                     'bytecode': contract_interface['bin']
                 }
-                
-                output_filename = os.path.join(BUILD_DIR, f"{contract_name}.json")
+
+                output_filename = os.path.join(BUILD_DIR, f"{actual_name}.json")
                 with open(output_filename, 'w') as f:
                     json.dump(output_data, f, indent=4)
-                
+
                 print(f"  => Success! Output saved to {output_filename}")
 
             except Exception as e:
