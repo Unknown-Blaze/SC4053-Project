@@ -113,7 +113,7 @@
 .subtitle {
   margin-top: 0.25rem;
   color: #6b7280;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
 }
 
 .nftText {
@@ -207,7 +207,7 @@
   color: #007C8A;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   transition: color 0.25s ease;
   padding: 0;
 }

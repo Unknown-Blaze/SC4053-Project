@@ -193,7 +193,7 @@ function CharityProjectForm() {
       onStepChange("Saving project to database...");
       
       // Save project data to Firestore with contract information
-      const docRef = await addDoc(collection(db, "charity_projects"), {
+      const firestoreData = {
         name,
         description,
         contact_email: contactEmail,
@@ -208,9 +208,22 @@ function CharityProjectForm() {
         milestone_count: milestoneData.length,
         status: "deployed",
         created_at: new Date().toISOString()
-      });
+      };
 
-      setSuccess(`Project created successfully! Contract deployed at: ${receipt.contractAddress}`);
+      // 🆕 Add IPFS metadata hash if available
+      if (projectData.ipfs_metadata_hash) {
+        firestoreData.ipfs_metadata_hash = projectData.ipfs_metadata_hash;
+        firestoreData.ipfs_metadata_uri = projectData.ipfs_metadata_uri;
+        console.log(`✅ Project metadata stored on IPFS: ${projectData.ipfs_metadata_uri}`);
+      }
+
+      const docRef = await addDoc(collection(db, "charity_projects"), firestoreData);
+
+      let successMessage = `Project created successfully! Contract deployed at: ${receipt.contractAddress}`;
+      if (projectData.ipfs_metadata_hash) {
+        successMessage += `\n📦 Metadata stored on IPFS: ${projectData.ipfs_metadata_hash}`;
+      }
+      setSuccess(successMessage);
 
       // Clear form (but keep auto-filled fields)
       setName("");

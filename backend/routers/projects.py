@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import os
 import json
 from services.eth_client import w3
+from services.project_ipfs import upload_project_metadata
 
 router = APIRouter()
 
@@ -54,6 +55,7 @@ async def create_project(request: CreateProjectRequest):
     """
     Create a new charity project and return unsigned transaction for MetaMask signing
     The NGO's wallet will pay for gas fees.
+    Optionally uploads project metadata to IPFS if enabled.
     """
     try:
         print(f"DEBUG: Starting project creation for {request.name}")
@@ -82,6 +84,30 @@ async def create_project(request: CreateProjectRequest):
         milestone_names = [m.name for m in request.milestones]
         milestone_descriptions = [m.description for m in request.milestones]
         milestone_amounts = [int(m.amount * 10**18) for m in request.milestones]
+        
+        # 🆕 IPFS INTEGRATION: Upload project metadata to IPFS (optional)
+        ipfs_hash = None
+        use_ipfs = os.getenv("USE_IPFS_PROJECTS", "false").lower() == "true"
+        
+        if use_ipfs:
+            try:
+                print("DEBUG: Uploading project metadata to IPFS...")
+                ipfs_hash = upload_project_metadata(
+                    name=request.name,
+                    description=request.description,
+                    ngo_name=request.ngoName,
+                    contact_email=request.contact_email,
+                    milestones=[{
+                        "name": m.name,
+                        "description": m.description,
+                        "amount": m.amount
+                    } for m in request.milestones],
+                    eth_wallet_address=request.eth_wallet_address
+                )
+                print(f"✅ Project metadata uploaded to IPFS: ipfs://{ipfs_hash}")
+            except Exception as ipfs_error:
+                print(f"⚠️ IPFS upload failed (continuing without it): {str(ipfs_error)}")
+                # Don't fail the entire request if IPFS upload fails
         
         print("DEBUG: Creating contract instance")
         # Create contract instance
@@ -123,7 +149,7 @@ async def create_project(request: CreateProjectRequest):
         print(f"DEBUG: Final transaction: {constructor_tx}")
         
         # Return the unsigned transaction for frontend to sign with MetaMask
-        return {
+        response = {
             "success": True,
             "message": "Contract deployment transaction prepared",
             "unsigned_transaction": constructor_tx,
@@ -135,11 +161,65 @@ async def create_project(request: CreateProjectRequest):
             }
         }
         
+        # 🆕 Add IPFS hash to response if available
+        if ipfs_hash:
+            response["ipfs_metadata_hash"] = ipfs_hash
+            response["ipfs_metadata_uri"] = f"ipfs://{ipfs_hash}"
+        
+        return response
+        
     except Exception as e:
         print(f"Error creating project: {e}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to create project: {str(e)}")
+
+@router.get("/all")
+async def get_all_projects():
+    """
+    Get all projects from Firebase with IPFS metadata when available
+    """
+    try:
+        from firebase_admin import firestore
+        db = firestore.client()
+        
+        # Fetch all projects from Firebase
+        projects_ref = db.collection('charity_projects')
+        docs = projects_ref.stream()
+        
+        projects = []
+        for doc in docs:
+            project_data = doc.to_dict()
+            project_data['id'] = doc.id
+            
+            # If project has IPFS metadata, optionally fetch and merge
+            if 'ipfs_metadata_hash' in project_data and project_data['ipfs_metadata_hash']:
+                ipfs_hash = project_data['ipfs_metadata_hash']
+                project_data['ipfs_url'] = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash}"
+                
+                # Optionally fetch IPFS data for verification
+                # This is commented out to avoid slowing down the response
+                # Uncomment if you want to verify IPFS data matches Firebase
+                # try:
+                #     from services.ipfs_client import fetch_from_ipfs
+                #     ipfs_data = fetch_from_ipfs(ipfs_hash)
+                #     project_data['ipfs_verified'] = True
+                # except:
+                #     project_data['ipfs_verified'] = False
+            
+            projects.append(project_data)
+        
+        return {
+            "success": True,
+            "count": len(projects),
+            "projects": projects
+        }
+        
+    except Exception as e:
+        print(f"Error fetching projects: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to fetch projects: {str(e)}")
 
 @router.get("/project/{contract_address}/details")
 async def get_project_details(contract_address: str):

@@ -58,7 +58,7 @@ const ProjectDisplayPage = () => {
     }, stepDuration);
   };
 
-  // Fetch initial project details from Firestore
+  // Fetch initial project details from backend API (with IPFS support)
   useEffect(() => {
     const fetchProject = async () => {
       if (!projectId) {
@@ -69,35 +69,49 @@ const ProjectDisplayPage = () => {
       setLoadingProject(true);
       setProjectError(null);
       try {
-        const projectDocRef = doc(db, 'charity_projects', projectId);
-        const docSnap = await getDoc(projectDocRef);
-        if (docSnap.exists()) {
-          const data = { id: docSnap.id, ...docSnap.data() };
+        // First, try to fetch from backend API (includes IPFS metadata)
+        const response = await fetch(`http://127.0.0.1:8000/projects/all`);
+        const apiData = await response.json();
+        
+        if (apiData.success) {
+          // Find the specific project by ID
+          const foundProject = apiData.projects.find(p => p.id === projectId);
+          
+          if (foundProject) {
+            const data = foundProject;
 
-          if (data.eth_wallet_address) {
-            data.recipientAddress = data.eth_wallet_address;
-          }
+            if (data.eth_wallet_address) {
+              data.recipientAddress = data.eth_wallet_address;
+            }
 
-          setProjectData(data);
+            // Log IPFS info if available
+            if (data.ipfs_metadata_hash) {
+              console.log(`✅ Project has IPFS metadata: ${data.ipfs_metadata_hash}`);
+              console.log(`   IPFS URL: ${data.ipfs_url}`);
+            }
 
-          // Set milestones with proper status based on contract state
-          if (data.milestones && Array.isArray(data.milestones)) {
-            const processedMilestones = data.milestones.map((m, index) => {
-              return {
-                ...m,
-                id: m.id || m.name || `milestone-${index}`,
-                status: "Pending" // All milestones start as pending until funded
-              };
-            });
-            setMilestones(processedMilestones);
+            setProjectData(data);
+
+            // Set milestones with proper status based on contract state
+            if (data.milestones && Array.isArray(data.milestones)) {
+              const processedMilestones = data.milestones.map((m, index) => {
+                return {
+                  ...m,
+                  id: m.id || m.name || `milestone-${index}`,
+                  status: "Pending" // All milestones start as pending until funded
+                };
+              });
+              setMilestones(processedMilestones);
+            } else {
+              setMilestones([]);
+            }
           } else {
+            setProjectError("Project not found.");
+            setProjectData(null);
             setMilestones([]);
           }
-
         } else {
-          setProjectError("Project not found.");
-          setProjectData(null);
-          setMilestones([]);
+          throw new Error("Failed to fetch projects from backend");
         }
       } catch (error) {
         console.error("Error fetching project details:", error);
