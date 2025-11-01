@@ -17,6 +17,7 @@ import ProjectsGallery from './pages/ProjectsPage';
 import CharityProjectForm from "./pages/CreateProject";
 import ProjectDisplayPage from './pages/ProjectDisplayPage';
 import UserProfile from './pages/UserProfile';
+import NFTGalleryPage from './pages/NFTGalleryPage';
 
 import { ProtectedRoute, PublicOnlyRoute } from './components/ProtectedRoute';
 
@@ -163,6 +164,15 @@ function AppLayout() {
                 Projects Gallery
               </NavLink>
 
+              <NavLink
+                to="/nft"
+                style={({ isActive }) =>
+                  isActive ? { ...navStyles.link, ...navStyles.activeLink } : navStyles.link
+                }
+              >
+                NFT Gallery
+              </NavLink>
+
               {currentUserProfile?.userType === "nonprofit" && (
                 <NavLink
                   to="/createproject"
@@ -208,7 +218,7 @@ function AppLayout() {
 
         {/* Public Routes */}
         <Route path="/landing" element={<HomePage />} />
-        <Route path="/nft" element={<MintNFTPage />} />
+        <Route path="/nft" element={<NFTGalleryPage />} />
         <Route path="/projects" element={<ProjectsGallery />} />
         <Route path="/projects/:projectId" element={<ProjectDisplayPage />} />
         <Route path="/admin-debug" element={<AdminDebugPage />} />
