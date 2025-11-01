@@ -63,22 +63,17 @@
   border-color: #007C8A;
 }
 
-.statIcon {
-  font-size: 2em;
-  margin-bottom: 0.4rem;
-}
-
 .statLabel {
   font-size: 0.7rem;
   color: #666;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-weight: 600;
 }
 
 .statValue {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: #1a2a3a;
 }
@@ -103,16 +98,11 @@
   border: 1px solid #e1eaff;
 }
 
-.emptyIcon {
-  font-size: 3em;
-  margin-bottom: 0.8rem;
-}
-
 .emptyTitle {
   font-size: 1.2rem;
   font-weight: 700;
   color: #1a2a3a;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.6rem;
 }
 
 .emptyText {
@@ -171,13 +161,8 @@
   color: white;
 }
 
-.certificateIcon {
-  font-size: 2.5em;
-  margin-bottom: 0.4rem;
-}
-
 .certificateTitle {
-  margin: 0 0 0.4rem 0;
+  margin: 0 0 0.6rem 0;
   font-size: 0.95rem;
   font-weight: 600;
 }
@@ -185,7 +170,7 @@
 .certificateTier {
   font-size: 1.1rem;
   font-weight: 700;
-  margin-top: 0.4rem;
+  margin-top: 0.2rem;
 }
 
 .certificateBody {

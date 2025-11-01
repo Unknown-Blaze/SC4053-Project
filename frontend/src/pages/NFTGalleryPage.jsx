@@ -79,7 +79,7 @@ const NFTGalleryPage = () => {
       {/* Header */}
       <div className={styles.titleContainer}>
         <h1 className={styles.galleryTitle}>
-          🎖️ Your Donation Certificates
+          Your Donation Certificates
         </h1>
         <span className={styles.walletAddress}>
           {currentUserProfile.walletAddress}
@@ -90,22 +90,18 @@ const NFTGalleryPage = () => {
       {stats && (
         <div className={styles.statsGrid}>
           <StatCard
-            icon="💎"
             label="Overall Tier"
             value={stats.overall_tier}
           />
           <StatCard
-            icon="💰"
             label="Total Donated"
             value={`${stats.total_donated_eth} ETH`}
           />
           <StatCard
-            icon="🎯"
             label="Projects Supported"
             value={stats.projects_supported}
           />
           <StatCard
-            icon="📜"
             label="Certificates"
             value={stats.total_nfts}
           />
@@ -122,10 +118,9 @@ const NFTGalleryPage = () => {
       {/* Certificates Grid */}
       {certificates.length === 0 ? (
         <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🔭</div>
           <h2 className={styles.emptyTitle}>No certificates yet</h2>
           <p className={styles.emptyText}>
-            Start making donations to earn your first certificate NFT!
+            Start making donations to earn your first certificate NFT.
           </p>
           <Link to="/projects" className={styles.browseButton}>
             Browse Projects
@@ -143,9 +138,8 @@ const NFTGalleryPage = () => {
 };
 
 // Stat Card Component
-const StatCard = ({ icon, label, value }) => (
+const StatCard = ({ label, value }) => (
   <div className={styles.statCard}>
-    <div className={styles.statIcon}>{icon}</div>
     <div className={styles.statLabel}>{label}</div>
     <div className={styles.statValue}>{value}</div>
   </div>
@@ -168,7 +162,6 @@ const CertificateCard = ({ certificate }) => {
     <div className={styles.certificateCard}>
       {/* Certificate Header */}
       <div className={styles.certificateHeader}>
-        <div className={styles.certificateIcon}>🎖️</div>
         <h3 className={styles.certificateTitle}>
           Donation Certificate
         </h3>
