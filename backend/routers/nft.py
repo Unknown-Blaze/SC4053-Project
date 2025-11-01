@@ -209,7 +209,6 @@ def get_nft_gallery(address: str):
         
         # Get balance
         balance = nft_contract.functions.balanceOf(checksum_address).call()
-        print(f"Balance: {balance}")
 
         certificates = []
         for i in range(balance):
@@ -230,7 +229,6 @@ def get_nft_gallery(address: str):
                     except Exception as e:
                         print(f"Error parsing metadata for token {token_id}: {e}")
                         metadata = None
-                print(f"Metadata : {metadata}")
                 
                 # Format certificate data
                 certificate = {
@@ -242,13 +240,11 @@ def get_nft_gallery(address: str):
                     "attributes": metadata.get("attributes", []) if metadata else []
                 }
                 
-                print(f"Certificate : {certificate}")
                 certificates.append(certificate)
             except Exception as e:
                 print(f"Error processing token {i}: {e}")
                 continue
         
-        print(f"All Certificates : {certificates}")
         return {
             "success": True,
             "address": checksum_address,
