@@ -49,7 +49,7 @@ const UnifiedAuthPage = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [showForm, setShowForm] = useState(false);
 
-  const { login, signup, currentUser, currentUserProfile } = useAuth();
+  const { login, loginWithWallet, signup, currentUser, currentUserProfile } = useAuth();
   const { connectWallet, isConnected } = useSessionWalletAuth();
   const navigate = useNavigate();
 
@@ -97,10 +97,22 @@ const UnifiedAuthPage = () => {
       const userSnapshot = await getDocs(userQuery);
       
       if (!userSnapshot.empty) {
-        setIsExistingUser(true);
-        handleStepChange('');
-        // Don't redirect - show login form on same page
+        // User exists - automatically authenticate with wallet
+        handleStepChange("Authenticating...");
+        try {
+          await loginWithWallet(address);
+          handleStepChange("Login successful! Redirecting...");
+          // Redirect to user profile
+          setTimeout(() => {
+            navigate('/userprofile');
+          }, 1000);
+        } catch (loginError) {
+          console.error("Error logging in with wallet:", loginError);
+          setError(loginError.message || "Failed to authenticate with wallet.");
+          handleStepChange('');
+        }
       } else {
+        // User doesn't exist - show signup form
         setIsExistingUser(false);
         setShowForm(true);
         handleStepChange('');
