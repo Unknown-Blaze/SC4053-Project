@@ -20,9 +20,52 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [currentUserProfile, setCurrentUserProfile] = useState(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [authMethod, setAuthMethod] = useState(null); // 'firebase' or 'wallet'
 
+  // Wallet-based authentication (primary method)
+  const loginWithWallet = async (walletAddress) => {
+    try {
+      // Query Firestore for user with this wallet address
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("walletAddress", "==", walletAddress), limit(1));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        throw new Error("No account found for this wallet address. Please sign up first.");
+      }
+
+      // Get the user document
+      const userDoc = querySnapshot.docs[0];
+      const profileData = { uid: userDoc.id, ...userDoc.data() };
+
+      // Set user profile (bypass Firebase Auth)
+      setCurrentUserProfile(profileData);
+      setCurrentUser({ 
+        uid: userDoc.id, 
+        email: profileData.email || null,
+        displayName: profileData.displayName || null,
+        walletAuth: true // Flag to indicate wallet-based auth
+      });
+      setAuthMethod('wallet');
+
+      // Persist wallet auth in sessionStorage
+      sessionStorage.setItem('walletAuth', JSON.stringify({
+        walletAddress,
+        uid: userDoc.id,
+        timestamp: Date.now()
+      }));
+
+      return { profile: profileData, walletAuth: true };
+    } catch (error) {
+      console.error("Error logging in with wallet:", error);
+      throw error;
+    }
+  };
+
+  // Traditional email/password login (secondary method)
   const login = async (email, password) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    setAuthMethod('firebase');
     // onAuthStateChanged will handle fetching profile
     return userCredential;
   };
@@ -184,8 +227,19 @@ export const AuthProvider = ({ children }) => {
   };
 
 
-  const logout = () => {
-    return signOut(auth);
+  const logout = async () => {
+    // Clear wallet auth
+    sessionStorage.removeItem('walletAuth');
+    setAuthMethod(null);
+    
+    // If using Firebase Auth, sign out
+    if (authMethod === 'firebase' || currentUser?.walletAuth === false) {
+      await signOut(auth);
+    }
+    
+    // Clear state
+    setCurrentUser(null);
+    setCurrentUserProfile(null);
   };
 
   const fetchUserProfile = async (userId) => {
@@ -213,19 +267,80 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Check for wallet authentication on mount
   useEffect(() => {
+    const checkWalletAuth = async () => {
+      try {
+        const walletAuthStr = sessionStorage.getItem('walletAuth');
+        if (walletAuthStr) {
+          const walletAuth = JSON.parse(walletAuthStr);
+          // Check if session is still valid (24 hours)
+          const sessionAge = Date.now() - walletAuth.timestamp;
+          if (sessionAge < 24 * 60 * 60 * 1000) {
+            // Restore wallet authentication - use the function directly
+            const usersRef = collection(db, "users");
+            const q = query(usersRef, where("walletAddress", "==", walletAuth.walletAddress), limit(1));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+              const userDoc = querySnapshot.docs[0];
+              const profileData = { uid: userDoc.id, ...userDoc.data() };
+              
+              setCurrentUserProfile(profileData);
+              setCurrentUser({ 
+                uid: userDoc.id, 
+                email: profileData.email || null,
+                displayName: profileData.displayName || null,
+                walletAuth: true
+              });
+              setAuthMethod('wallet');
+              setLoadingAuth(false);
+              return;
+            } else {
+              // Wallet not found, clear session
+              sessionStorage.removeItem('walletAuth');
+            }
+          } else {
+            // Session expired
+            sessionStorage.removeItem('walletAuth');
+          }
+        }
+      } catch (error) {
+        console.error("Error checking wallet auth:", error);
+        sessionStorage.removeItem('walletAuth');
+      }
+      
+      // If no wallet auth, check Firebase Auth
+      setLoadingAuth(false);
+    };
+
+    checkWalletAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Only listen to Firebase Auth changes if not using wallet auth
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (authMethod === 'wallet' || sessionStorage.getItem('walletAuth')) {
+        // Skip Firebase Auth if using wallet auth
+        return;
+      }
+
       if (user) {
         setCurrentUser(user);
-        await fetchUserProfile(user.uid); // This will now fetch profile possibly containing gemWalletAddress
+        setAuthMethod('firebase');
+        await fetchUserProfile(user.uid);
       } else {
-        setCurrentUser(null);
-        setCurrentUserProfile(null);
+        // Only clear if not using wallet auth
+        if (authMethod !== 'wallet') {
+          setCurrentUser(null);
+          setCurrentUserProfile(null);
+        }
       }
       setLoadingAuth(false);
     });
     return unsubscribe;
-  }, []);
+  }, [authMethod]);
 
   // Admin function to check for orphaned accounts
   const checkOrphanedAccounts = async (email) => {
@@ -253,11 +368,13 @@ export const AuthProvider = ({ children }) => {
     currentUserProfile,
     fetchUserProfile,
     login,
+    loginWithWallet, // NEW: Wallet-based login
     signup,
     logout,
     loadingAuth,
     updateUserGemWalletAddress, // RENAMED: Expose the renamed function
     checkOrphanedAccounts, // Admin function to check account status
+    authMethod, // NEW: Track auth method
   };
 
   return (
