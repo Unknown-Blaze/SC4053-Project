@@ -12,6 +12,8 @@ import { ethers } from 'ethers';
 
 import { API_ENDPOINTS } from '../config/api';
 
+import { useAuth } from '../contexts/AuthContext';
+
 
 const ProjectDisplayPage = () => {
   const { projectId } = useParams();
