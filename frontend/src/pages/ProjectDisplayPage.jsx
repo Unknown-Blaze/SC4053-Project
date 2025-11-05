@@ -73,7 +73,7 @@ const ProjectDisplayPage = () => {
       setProjectError(null);
       try {
         // First, try to fetch from backend API (includes IPFS metadata)
-        const response = await fetch(API_ENDPOINTS.getAllProjects);
+        const response = await fetch(`http://127.0.0.1:8000/projects/all`);
         const apiData = await response.json();
         
         if (apiData.success) {
@@ -236,7 +236,9 @@ const ProjectDisplayPage = () => {
 
     setIsLoadingTx(true);
     setTxError(null);
-    const url = API_ENDPOINTS.latestTransactions(projectData.contract_address);
+    const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
+    // The backend endpoint now expects 'address' - use contract address for donation tracking
+    url.searchParams.append('address', projectData.contract_address);
     try {
       const res = await fetch(url);
       if (!res.ok) {
