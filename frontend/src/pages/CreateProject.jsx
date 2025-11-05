@@ -4,6 +4,7 @@ import { collection, addDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 import { ethers } from 'ethers'; // Import ethers for validation
 import { useAuth } from '../contexts/AuthContext';
+import { API_ENDPOINTS } from '../config/api';
 import { 
   PlusIcon, 
   MinusIcon, 
@@ -123,7 +124,7 @@ function CharityProjectForm() {
       });
       
       // Call backend to get unsigned transaction
-      const response = await fetch('http://127.0.0.1:8000/projects/create-project', {
+      const response = await fetch(API_ENDPOINTS.createProject, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

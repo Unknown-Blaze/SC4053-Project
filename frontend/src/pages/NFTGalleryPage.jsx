@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Link } from 'react-router-dom';
 import styles from '../styles/NFTGalleryPage.module.css';
+import { API_ENDPOINTS } from '../config/api';
 
 const NFTGalleryPage = () => {
   const { currentUserProfile } = useAuth();
@@ -24,7 +25,7 @@ const NFTGalleryPage = () => {
       setLoading(true);
       setError(null);
       const response = await fetch(
-        `http://localhost:8000/nft/gallery/${currentUserProfile.walletAddress}`
+        API_ENDPOINTS.nftGallery(currentUserProfile.walletAddress)
       );
       
       if (!response.ok) {
@@ -50,7 +51,7 @@ const NFTGalleryPage = () => {
   const fetchDonorStats = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/nft/stats/${currentUserProfile.walletAddress}`
+        API_ENDPOINTS.nftStats(currentUserProfile.walletAddress)
       );
       
       if (!response.ok) {
