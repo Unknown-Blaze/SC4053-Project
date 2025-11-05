@@ -75,7 +75,7 @@ const ProjectDisplayPage = () => {
       setProjectError(null);
       try {
         // First, try to fetch from backend API (includes IPFS metadata)
-        const response = await fetch(`http://127.0.0.1:8000/projects/all`);
+        const response = await fetch(API_ENDPOINTS.getAllProjects);
         const apiData = await response.json();
         
         if (apiData.success) {
@@ -139,7 +139,7 @@ const ProjectDisplayPage = () => {
       setMilestonesError(null);
       
       // Fetch contract details from backend
-      const response = await fetch(`http://127.0.0.1:8000/projects/project/${contractAddress}/details`);
+      const response = await fetch(API_ENDPOINTS.getProjectDetails(contractAddress));
       if (!response.ok) {
         throw new Error('Failed to fetch contract details');
       }
@@ -316,7 +316,7 @@ const ProjectDisplayPage = () => {
       
       // Get unsigned transactions from backend (may include completeMilestone + verifyMilestone)
       const response = await fetch(
-        `http://127.0.0.1:8000/projects/project/${contractAddress}/verify-milestone/${milestoneIndex}`,
+        API_ENDPOINTS.verifyMilestone(contractAddress, milestoneIndex),
         { method: 'POST' }
       );
       

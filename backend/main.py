@@ -81,3 +81,20 @@ app.include_router(wallet.router, prefix="/wallet", tags=["Ethereum Wallet"])
 app.include_router(transaction.router, prefix="/transaction", tags=["Ethereum Transactions"])
 app.include_router(nft.router, prefix="/nft", tags=["Ethereum NFTs"])
 app.include_router(projects.router, prefix="/projects", tags=["Charity Projects"])
+
+# Health check endpoint
+@app.get("/")
+async def root():
+    """Root endpoint for health checks"""
+    return {
+        "status": "online",
+        "message": "SC4053 Charity Project Backend API",
+        "version": "0.2.0",
+        "endpoints": {
+            "docs": "/docs",
+            "projects": "/projects/all",
+            "wallet": "/wallet/create-wallet",
+            "nft": "/nft/gallery/{address}",
+            "transactions": "/transaction/latest-transactions"
+        }
+    }
