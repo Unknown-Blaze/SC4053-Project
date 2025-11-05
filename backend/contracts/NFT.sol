@@ -23,8 +23,6 @@ contract NGO_NFT is ERC721, ERC721URIStorage, ERC721Enumerable, Ownable {
         _setTokenURI(tokenId, uri);
     }
 
-    // --- REQUIRED OVERRIDES TO RESOLVE CONFLICTS ---
-
     // Override _update for ERC721Enumerable
     function _update(address to, uint256 tokenId, address auth)
         internal
