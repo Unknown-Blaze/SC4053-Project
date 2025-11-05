@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 contract MultiMilestoneEscrow {
     // Core contract participants
     address public donor;
-    address payable public recipient;
+    address payable public recipient; // NGO proposing the project
     address public verifier; // NGO or authorized verifier
     
     // Milestone management
@@ -167,7 +167,7 @@ contract MultiMilestoneEscrow {
         return (totalDonations * 100) / totalAmount; // Returns percentage
     }
     
-    // Milestone completion (can be called by recipient or verifier)
+    // Milestone completion (can be called by recipient or verifier) to verify the current milestone before releasing the funds.
     function completeMilestone(uint256 _milestoneIndex, string memory _verificationHash) 
         public 
         onlyDonorOrVerifier 
