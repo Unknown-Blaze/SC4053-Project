@@ -31,10 +31,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - ./frontend/.env
     environment:
-      # Vite environment variables (must start with VITE_)
-      - VITE_API_URL=${VITE_API_URL:-http://localhost:8000}
-      
       # Railway Port (Railway sets this automatically)
       - PORT=${PORT:-3000}
     depends_on:
