@@ -1,4 +1,4 @@
-# nGoDonate - Ethereum Edition 
+# nGoDonate - Ethereum Edition
 
 <h2>React + Vite + FastAPI + Ethereum Blockchain App</h2>
 <p>A blockchain-based, transparent, and secure donation platform now powered by Ethereum.</p>
