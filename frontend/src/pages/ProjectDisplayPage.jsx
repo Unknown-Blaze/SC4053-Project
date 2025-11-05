@@ -238,9 +238,8 @@ const ProjectDisplayPage = () => {
 
     setIsLoadingTx(true);
     setTxError(null);
-    const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
+    const url = new URL(API_ENDPOINTS.latestTransactions(projectData.contract_address));
     // The backend endpoint now expects 'address' - use contract address for donation tracking
-    url.searchParams.append('address', projectData.contract_address);
     try {
       const res = await fetch(url);
       if (!res.ok) {
