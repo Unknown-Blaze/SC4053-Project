@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styles from '../styles/ProjectsPage.module.css';
 import { useAuth } from '../contexts/AuthContext';
+import { API_ENDPOINTS } from '../config/api';
 
 
 const ProjectsGallery = () => {
@@ -16,7 +17,7 @@ const ProjectsGallery = () => {
       setLoadingProjects(true);
       try {
         // Fetch projects from backend API (which includes IPFS metadata)
-        const response = await fetch('http://127.0.0.1:8000/projects/all');
+        const response = await fetch(API_ENDPOINTS.getAllProjects);
         const data = await response.json();
         
         if (data.success) {

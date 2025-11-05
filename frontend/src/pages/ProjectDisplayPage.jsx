@@ -9,9 +9,7 @@ import classes from '../styles/ProjectDisplayPage.module.css';
 import { doc, getDoc } from "firebase/firestore";
 import { db } from '../firebase/config';
 import { ethers } from 'ethers';
-
-// UPDATED: The endpoint now takes an 'address' parameter, not 'account'
-const LATEST_TRANSACTIONS_ENDPOINT = 'http://127.0.0.1:8000/transaction/latest-transactions';
+import { API_ENDPOINTS } from '../config/api';
 
 const ProjectDisplayPage = () => {
   const { projectId } = useParams();
@@ -70,7 +68,7 @@ const ProjectDisplayPage = () => {
       setProjectError(null);
       try {
         // First, try to fetch from backend API (includes IPFS metadata)
-        const response = await fetch(`http://127.0.0.1:8000/projects/all`);
+        const response = await fetch(API_ENDPOINTS.getAllProjects);
         const apiData = await response.json();
         
         if (apiData.success) {
@@ -215,9 +213,7 @@ const ProjectDisplayPage = () => {
 
     setIsLoadingTx(true);
     setTxError(null);
-    const url = new URL(LATEST_TRANSACTIONS_ENDPOINT);
-    // The backend endpoint now expects 'address' - use contract address for donation tracking
-    url.searchParams.append('address', projectData.contract_address);
+    const url = API_ENDPOINTS.latestTransactions(projectData.contract_address);
     try {
       const res = await fetch(url);
       if (!res.ok) {
