@@ -177,7 +177,7 @@ async def create_project(request: CreateProjectRequest):
 @router.get("/all")
 async def get_all_projects():
     """
-    Get all projects from Firebase with IPFS metadata when available
+    Get all projects from Firebase with IPFS metadata when available.
     """
     try:
         from firebase_admin import firestore
@@ -441,3 +441,158 @@ async def get_project_stats(contract_address: str):
     except Exception as e:
         print(f"Error getting project stats: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get project stats: {str(e)}")
+
+@router.post("/project/{contract_address}/verify-milestone/{milestone_index}")
+async def verify_milestone(contract_address: str, milestone_index: int):
+    """
+    Verify a milestone and release funds to the NGO.
+    This function handles both completing the milestone (if not completed) and verifying it.
+    Returns unsigned transactions for verifier to sign with MetaMask.
+    """
+    try:
+        checksum_address = w3.to_checksum_address(contract_address)
+        contract = w3.eth.contract(address=checksum_address, abi=MULTI_MILESTONE_ABI)
+        
+        # Get verifier address from contract
+        verifier_address = contract.functions.verifier().call()
+        verifier_checksum = w3.to_checksum_address(verifier_address)
+        
+        # Get milestone info
+        milestone = contract.functions.getMilestone(milestone_index).call()
+        is_completed = milestone[3]
+        is_verified = milestone[4]
+        milestone_amount = milestone[2]  # amount in wei
+        
+        if is_verified:
+            raise HTTPException(status_code=400, detail="Milestone is already verified")
+        
+        # Check contract balance - must have enough funds for this milestone
+        contract_balance = contract.functions.getContractBalance().call()
+        
+        # Calculate cumulative target for this milestone
+        milestone_count = contract.functions.getMilestoneCount().call()
+        cumulative_target = 0
+        for i in range(milestone_index + 1):
+            m = contract.functions.getMilestone(i).call()
+            cumulative_target += m[2]
+        
+        if contract_balance < cumulative_target:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Insufficient contract balance. Required: {w3.from_wei(cumulative_target, 'ether')} ETH (cumulative), Available: {w3.from_wei(contract_balance, 'ether')} ETH"
+            )
+        
+        # Get chain ID and nonce for verifier
+        chain_id = w3.eth.chain_id
+        nonce = w3.eth.get_transaction_count(verifier_checksum)
+        
+        # If milestone is not completed, we need to complete it first
+        # But to avoid two transactions, we'll modify the contract flow
+        # For now, we'll auto-complete if not completed, but this requires contract changes
+        # So we'll check: if completed, only verify. If not, we need both.
+        
+        # Check if we can auto-complete (milestone is next in sequence)
+        current_milestone_index = contract.functions.getCurrentMilestoneIndex().call()
+        
+        if not is_completed:
+            # Milestone must be completed first - we need to check if it's the current milestone
+            if milestone_index != current_milestone_index:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Milestone {milestone_index} cannot be completed yet. Current milestone index is {current_milestone_index}. Milestones must be completed in order."
+                )
+            
+            # Generate a verification hash
+            verification_hash = f"verified_{milestone_index}_{int(w3.eth.get_block('latest')['timestamp'])}"
+            
+            # Build completeMilestone transaction
+            complete_tx = contract.functions.completeMilestone(milestone_index, verification_hash).build_transaction({
+                'from': verifier_checksum,
+                'nonce': nonce,
+                'chainId': chain_id,
+                'gas': 200000
+            })
+            
+            # Clean up transaction
+            complete_tx.pop('gasPrice', None)
+            complete_tx.pop('maxFeePerGas', None)
+            complete_tx.pop('maxPriorityFeePerGas', None)
+            if 'gas' in complete_tx and isinstance(complete_tx['gas'], int):
+                complete_tx['gas'] = hex(complete_tx['gas'])
+            
+            # Increment nonce for verify transaction
+            nonce += 1
+            
+            # Build verifyMilestone transaction (will be called after completeMilestone)
+            verify_tx = contract.functions.verifyMilestone(milestone_index).build_transaction({
+                'from': verifier_checksum,
+                'nonce': nonce,
+                'chainId': chain_id,
+                'gas': 200000
+            })
+            
+            # Clean up transaction
+            verify_tx.pop('gasPrice', None)
+            verify_tx.pop('maxFeePerGas', None)
+            verify_tx.pop('maxPriorityFeePerGas', None)
+            if 'gas' in verify_tx and isinstance(verify_tx['gas'], int):
+                verify_tx['gas'] = hex(verify_tx['gas'])
+            
+            # Return both transactions - frontend will execute them sequentially
+            transactions = [
+                {
+                    "type": "complete",
+                    "transaction": complete_tx,
+                    "description": "Complete milestone"
+                },
+                {
+                    "type": "verify",
+                    "transaction": verify_tx,
+                    "description": "Verify milestone and release funds"
+                }
+            ]
+        else:
+            # Milestone is already completed, only need verify transaction
+            verify_tx = contract.functions.verifyMilestone(milestone_index).build_transaction({
+                'from': verifier_checksum,
+                'nonce': nonce,
+                'chainId': chain_id,
+                'gas': 200000
+            })
+            
+            # Clean up transaction
+            verify_tx.pop('gasPrice', None)
+            verify_tx.pop('maxFeePerGas', None)
+            verify_tx.pop('maxPriorityFeePerGas', None)
+            if 'gas' in verify_tx and isinstance(verify_tx['gas'], int):
+                verify_tx['gas'] = hex(verify_tx['gas'])
+            
+            # Only one transaction needed
+            transactions = [
+                {
+                    "type": "verify",
+                    "transaction": verify_tx,
+                    "description": "Verify milestone and release funds"
+                }
+            ]
+        
+        return {
+            "success": True,
+            "message": "Verification transactions prepared",
+            "transactions": transactions,
+            "milestone_index": milestone_index,
+            "milestone_name": milestone[0],
+            "milestone_amount_eth": float(w3.from_wei(milestone_amount, 'ether')),
+            "cumulative_target_eth": float(w3.from_wei(cumulative_target, 'ether')),
+            "contract_balance_eth": float(w3.from_wei(contract_balance, 'ether')),
+            "verifier_address": verifier_checksum,
+            "needs_completion": not is_completed
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error preparing verification transaction: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to prepare verification transaction: {str(e)}")
