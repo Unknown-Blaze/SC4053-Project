@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   getAllProjects: `${API_BASE_URL}/projects/all`,
   getProjectDetails: (contractAddress) => `${API_BASE_URL}/projects/project/${contractAddress}/details`,
   mintCertificate: (contractAddress) => `${API_BASE_URL}/projects/project/${contractAddress}/mint-certificate`,
+  verifyMilestone: (contractAddress, milestoneIndex) => `${API_BASE_URL}/projects/project/${contractAddress}/verify-milestone/${milestoneIndex}`,
   
   // NFT
   nftGallery: (walletAddress) => `${API_BASE_URL}/nft/gallery/${walletAddress}`,
