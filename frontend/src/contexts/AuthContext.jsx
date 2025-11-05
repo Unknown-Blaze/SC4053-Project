@@ -226,6 +226,42 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // NEW: Function to update user profile (displayName)
+  const updateUserProfile = async (newDisplayName) => {
+    if (!currentUserProfile || !currentUserProfile.uid) {
+      console.error("No user profile available to update.");
+      return false;
+    }
+    
+    try {
+      const userRef = doc(db, "users", currentUserProfile.uid);
+      await updateDoc(userRef, { displayName: newDisplayName });
+
+      // Update Firebase Auth profile if using Firebase auth
+      if (currentUser && !currentUser.walletAuth) {
+        await updateProfile(auth.currentUser, { displayName: newDisplayName });
+      }
+
+      // Update local state immediately
+      setCurrentUserProfile(prevProfile => ({
+        ...prevProfile,
+        displayName: newDisplayName
+      }));
+
+      if (currentUser) {
+        setCurrentUser(prevUser => ({
+          ...prevUser,
+          displayName: newDisplayName
+        }));
+      }
+
+      console.log("User profile updated successfully:", newDisplayName);
+      return true;
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      return false;
+    }
+  };
 
   const logout = async () => {
     // Clear wallet auth
@@ -372,9 +408,10 @@ export const AuthProvider = ({ children }) => {
     signup,
     logout,
     loadingAuth,
-    updateUserGemWalletAddress, // RENAMED: Expose the renamed function
-    checkOrphanedAccounts, // Admin function to check account status
-    authMethod, // NEW: Track auth method
+    updateUserProfile,
+    updateUserGemWalletAddress,
+    checkOrphanedAccounts,
+    authMethod,
   };
 
   return (

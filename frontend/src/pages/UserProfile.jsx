@@ -50,61 +50,6 @@ const UserProfile = () => {
         fetchTransactions();
     }, []);
 
-    // dummy transactions
-    // useEffect(() => {
-    //     setTransactions([
-    //         {
-    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
-    //         from: "0x1234567890abcdef1234567890abcdef12345678",
-    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-    //         value_ether: "0.5",
-    //         blockNumber: "5489213",
-    //         timeStamp: "1695209123",
-    //         },
-    //         {
-    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
-    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
-    //         to: "0x9876543210fedcba9876543210fedcba98765432",
-    //         value_ether: "2.134",
-    //         blockNumber: "5489200",
-    //         timeStamp: "1695208000",
-    //         },
-    //         {
-    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
-    //         from: "0x1234567890abcdef1234567890abcdef12345678",
-    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-    //         value_ether: "0.5",
-    //         blockNumber: "5489213",
-    //         timeStamp: "1695209123",
-    //         },
-    //         {
-    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
-    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
-    //         to: "0x9876543210fedcba9876543210fedcba98765432",
-    //         value_ether: "2.134",
-    //         blockNumber: "5489200",
-    //         timeStamp: "1695208000",
-    //         },
-    //         {
-    //         hash: "0x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b",
-    //         from: "0x1234567890abcdef1234567890abcdef12345678",
-    //         to: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-    //         value_ether: "0.5",
-    //         blockNumber: "5489213",
-    //         timeStamp: "1695209123",
-    //         },
-    //         {
-    //         hash: "0xabcd1234ef567890abcd1234ef567890abcd1234ef567890abcd1234ef567890",
-    //         from: "0xdeaddeaddeaddeaddeaddeaddeaddeaddeadbeef",
-    //         to: "0x9876543210fedcba9876543210fedcba98765432",
-    //         value_ether: "2.134",
-    //         blockNumber: "5489200",
-    //         timeStamp: "1695208000",
-    //         },
-    //     ]);
-    //     setLoadingTransactions(false);
-    // }, []);
-
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
