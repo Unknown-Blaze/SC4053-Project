@@ -69,6 +69,7 @@ app.add_middleware(
         "https://*.vercel.app",  # Vercel preview deployments
         "http://localhost:5173",  # Local Vite dev
         "http://localhost:3000",  # Local production build
+        "https://sc-4053-bc-project.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
