@@ -6,6 +6,7 @@ import { ethers } from 'ethers';
 import { useAuth } from '../contexts/AuthContext';
 import { FiDollarSign, FiArrowLeft, FiCheckCircle, FiLoader, FiAlertCircle } from 'react-icons/fi';
 import classes from '../styles/ProjectDonationPage.module.css';
+import { API_ENDPOINTS } from '../config/api';
 
 const PRESET_AMOUNTS = [0.0001, 0.0005, 0.001, 0.0025];
 
@@ -37,7 +38,7 @@ const ProjectDonationPage = () => {
     try {
       setIsLoadingProject(true);
       const response = await fetch(
-        `http://localhost:8000/projects/project/${contractAddress}/details`
+        API_ENDPOINTS.getProjectDetails(contractAddress)
       );
       const data = await response.json();
       
@@ -88,7 +89,7 @@ const ProjectDonationPage = () => {
       const milestone = getCurrentMilestone();
 
       const response = await fetch(
-        `http://localhost:8000/projects/project/${project.contract_address}/mint-certificate`,
+        API_ENDPOINTS.mintCertificate(project.contract_address),
         {
           method: 'POST',
           headers: {

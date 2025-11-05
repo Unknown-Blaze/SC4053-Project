@@ -4,6 +4,7 @@ import { FiUser } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { doc, updateDoc, getDocs, collection, query } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { API_ENDPOINTS } from '../config/api';
 import styles from '../styles/Userprofile.module.css';
 
 const UserProfile = () => {
@@ -33,7 +34,7 @@ const UserProfile = () => {
             try{
                 // api returns all the normal transactions where the address is either the sender or the reciever 
                 // assuming the user can only make transactions and not receive, this should be okay
-                const res = await fetch(`http://localhost:8000/transaction/latest-transactions?address=${currentUserProfile.walletAddress}`);
+                const res = await fetch(API_ENDPOINTS.latestTransactions(currentUserProfile.walletAddress));
                 if(!res.ok){
                     throw new Error("Failed to fetch transactions");
                 }
