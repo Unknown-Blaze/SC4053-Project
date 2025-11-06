@@ -261,13 +261,6 @@ const LandingPage = () => {
   const handleMouseEnter = (key) => setHoverStates(prev => ({ ...prev, [key]: true }));
   const handleMouseLeave = (key) => setHoverStates(prev => ({ ...prev, [key]: false }));
 
-  const statsData = [
-    { icon: <FiDollarSign />, value: "1.2M+", label: "Funds Transparently Tracked" },
-    { icon: <FiBarChart2 />, value: "500+", label: "Verified Project Milestones" },
-    { icon: <FiGlobe />, value: "75+", label: "Supported Initiatives" },
-    { icon: <FiHeart />, value: "10K+", label: "Impacted Beneficiaries" },
-  ];
-
   const keyFeatures = [
   { 
     icon: <FiUsers />, 
@@ -308,9 +301,6 @@ const LandingPage = () => {
     { icon: <FiTrendingUp />, title: "Simplified Giving", description: "Wallet-based donations make the process seamless, while NFT receipts add a unique, verifiable layer of recognition for donors." },
   ];
 
-  statsData.map((_, index) => { // Initialize hover states for stats
-    if (!hoverStates[`stat-${index}`]) hoverStates[`stat-${index}`] = false;
-  });
   keyFeatures.map((_, index) => { // Initialize hover states for features
     if (!hoverStates[`feature-${index}`]) hoverStates[`feature-${index}`] = false;
   });
@@ -343,18 +333,6 @@ const LandingPage = () => {
           <img src="/poor_people.jpg"
                alt="nGoDonate Platform Interface" style={styles.heroImage} />
         </div>
-      </section>
-
-      <section style={styles.statsSection}>
-        {statsData.map((stat, index) => (
-          <div key={index} style={styles.statWidget}
-               onMouseEnter={() => handleMouseEnter(`stat-${index}`)}
-               onMouseLeave={() => handleMouseLeave(`stat-${index}`)}>
-            <div style={styles.statIcon}>{stat.icon}</div>
-            <div style={styles.statValue}>{stat.value}</div>
-            <div style={styles.statLabel}>{stat.label}</div>
-          </div>
-        ))}
       </section>
 
       <section id="learn-more" style={{ ...styles.contentSection, backgroundColor: '#FFFFFF'}}>
@@ -399,25 +377,7 @@ const LandingPage = () => {
       <footer style={styles.footer}>
         <div style={styles.footerTopRow}> {/* Container for brand and social links */}
             <div style={styles.footerBrand}>
-                <FiHelpCircle style={styles.footerBrandIcon} /> 
                 nGoDonate
-            </div>
-            <div style={styles.footerSocialLinks}>
-                <a href="#" style={styles.socialLink} 
-                   onMouseEnter={(e) => { e.currentTarget.style.color = styles.socialLinkHover.color; e.currentTarget.style.transform = styles.socialLinkHover.transform;}} 
-                   onMouseLeave={(e) => { e.currentTarget.style.color = styles.socialLink.color; e.currentTarget.style.transform = 'scale(1)';}}>
-                   <FiFacebook />
-                </a>
-                <a href="#" style={styles.socialLink}
-                   onMouseEnter={(e) => { e.currentTarget.style.color = styles.socialLinkHover.color; e.currentTarget.style.transform = styles.socialLinkHover.transform;}} 
-                   onMouseLeave={(e) => { e.currentTarget.style.color = styles.socialLink.color; e.currentTarget.style.transform = 'scale(1)';}}>
-                   <FiTwitter />
-                </a>
-                <a href="#" style={styles.socialLink}
-                   onMouseEnter={(e) => { e.currentTarget.style.color = styles.socialLinkHover.color; e.currentTarget.style.transform = styles.socialLinkHover.transform;}} 
-                   onMouseLeave={(e) => { e.currentTarget.style.color = styles.socialLink.color; e.currentTarget.style.transform = 'scale(1)';}}>
-                   <FiLinkedin />
-                </a>
             </div>
         </div>
         <p style={styles.footerCopyright}>© {new Date().getFullYear()} nGoDonate. All Rights Reserved. </p>
