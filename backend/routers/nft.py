@@ -275,7 +275,12 @@ def get_nft_gallery(address: str):
         # Get balance
         balance = nft_contract.functions.balanceOf(checksum_address).call()
         print(f"📊 Address {checksum_address} owns {balance} NFTs")
-
+        # Step 3: Build certificates and calculate stats simultaneously
+        certificates = []
+        total_donated = 0.0
+        projects_supported = set()
+        donation_count = 0
+        tier_counts = {"Platinum": 0, "Gold": 0, "Silver": 0, "Bronze": 0, "Supporter": 0}
         certificates = []
         for i in range(balance):
             try:
@@ -355,85 +360,9 @@ def get_nft_gallery(address: str):
                     print(f"   ⚠️ No attributes found in metadata")
                 
                 certificates.append(certificate)
-            except Exception as e:
-                print(f"❌ Error processing token {i}: {e}")
-                import traceback
-                traceback.print_exc()
-                continue
-        
-        print(f"✅ Successfully processed {len(certificates)} certificates")
-        return {
-            "success": True,
-            "address": checksum_address,
-            "total_certificates": balance,
-            "certificates": certificates,
-            "nft_contract": NFT_CONTRACT_ADDRESS
-        }
-    except Exception as e:
-        print(f"❌ Error getting NFT gallery: {e}")
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/stats/{address}")
-def get_donor_stats(address: str):
-    """
-    Get donation statistics based on NFT certificates owned
-    Supports both base64 and IPFS metadata
-    """
-    try:
-        checksum_address = w3.to_checksum_address(address)
-        nft_contract = w3.eth.contract(address=w3.to_checksum_address(NFT_CONTRACT_ADDRESS), abi=NFT_ABI)
-        
-        balance = nft_contract.functions.balanceOf(checksum_address).call()
-        
-        total_donated = 0.0
-        projects_supported = set()
-        donation_count = 0
-        tier_counts = {"Platinum": 0, "Gold": 0, "Silver": 0, "Bronze": 0, "Supporter": 0}
-        
-        for i in range(balance):
-            try:
-                token_id = nft_contract.functions.tokenOfOwnerByIndex(checksum_address, i).call()
-                token_uri = nft_contract.functions.tokenURI(token_id).call()
-                
-                # Parse metadata based on URI type
-                metadata = None
-                
-                # Base64 data URI
-                if token_uri.startswith("data:application/json;base64,"):
-                    json_data = token_uri.split(",")[1]
-                    decoded = base64.b64decode(json_data).decode('utf-8')
-                    metadata = json.loads(decoded)
-                
-                # IPFS URI
-                elif token_uri.startswith("ipfs://"):
-                    try:
-                        ipfs_hash = token_uri.replace("ipfs://", "")
-                        from services.ipfs_client import get_ipfs_client
-                        ipfs_client = get_ipfs_client()
-                        metadata = ipfs_client.fetch_json(ipfs_hash)
-                    except Exception as ipfs_error:
-                        # Fallback to public gateway
-                        try:
-                            import requests
-                            gateway_url = f"https://ipfs.io/ipfs/{ipfs_hash}"
-                            response = requests.get(gateway_url, timeout=10)
-                            response.raise_for_status()
-                            metadata = response.json()
-                        except:
-                            print(f"Could not fetch IPFS metadata for token {token_id}")
-                            continue
-                
-                # HTTP/HTTPS URL
-                elif token_uri.startswith("http://") or token_uri.startswith("https://"):
-                    import requests
-                    response = requests.get(token_uri, timeout=10)
-                    response.raise_for_status()
-                    metadata = response.json()
-                
+                # Calculate stats from attributes
                 if metadata:
-                    # Extract stats from attributes
                     for attr in metadata.get("attributes", []):
                         if attr.get("trait_type") == "Donation Amount (ETH)":
                             total_donated += float(attr.get("value", 0))
@@ -446,11 +375,14 @@ def get_donor_stats(address: str):
                                 if tier in tier_value:
                                     tier_counts[tier] += 1
                                     break
+
             except Exception as e:
-                print(f"Error processing token {i} for stats: {e}")
+                print(f"❌ Error processing token {i}: {e}")
+                import traceback
+                traceback.print_exc()
                 continue
         
-        # Determine overall tier based on total donated
+        # Determine overall tier
         if total_donated >= 1.0:
             overall_tier = "💎 Platinum"
         elif total_donated >= 0.5:
@@ -462,21 +394,29 @@ def get_donor_stats(address: str):
         else:
             overall_tier = "⭐ Supporter"
         
+        stats = {
+            "total_nfts": balance,
+            "total_donated_eth": round(total_donated, 6),
+            "projects_supported": len(projects_supported),
+            "donation_count": donation_count,
+            "overall_tier": overall_tier,
+            "tier_breakdown": tier_counts,
+            "projects_list": list(projects_supported)
+        }
+
+        print(f"✅ Successfully processed {len(certificates)} certificates")
         return {
             "success": True,
             "address": checksum_address,
-            "stats": {
-                "total_nfts": balance,
-                "total_donated_eth": round(total_donated, 6),
-                "projects_supported": len(projects_supported),
-                "donation_count": donation_count,
-                "overall_tier": overall_tier,
-                "tier_breakdown": tier_counts,
-                "projects_list": list(projects_supported)
-            }
+            "total_certificates": balance,
+            "certificates": certificates,
+            "nft_contract": NFT_CONTRACT_ADDRESS,
+            "stats": stats
         }
     except Exception as e:
-        print(f"Error getting donor stats: {e}")
+        print(f"❌ Error getting NFT gallery: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/tokens")
