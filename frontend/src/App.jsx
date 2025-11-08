@@ -12,7 +12,6 @@ import SignupPage from './pages/SignUpPage';
 import UnifiedAuthPage from './pages/UnifiedAuthPage';
 import AdminDebugPage from './pages/AdminDebugPage';
 import { usePageTracking } from './utils/analytics';
-import MintNFTPage from './pages/MintNFT';
 import ProjectsGallery from './pages/ProjectsPage';
 import CharityProjectForm from "./pages/CreateProject";
 import ProjectDisplayPage from './pages/ProjectDisplayPage';
