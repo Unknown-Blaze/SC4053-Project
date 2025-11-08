@@ -13,7 +13,6 @@ export const API_ENDPOINTS = {
   
   // NFT
   nftGallery: (walletAddress) => `${API_BASE_URL}/nft/gallery/${walletAddress}`,
-  nftStats: (walletAddress) => `${API_BASE_URL}/nft/stats/${walletAddress}`,
   
   // Transactions
   latestTransactions: (address) => `${API_BASE_URL}/transaction/latest-transactions?address=${address}`,

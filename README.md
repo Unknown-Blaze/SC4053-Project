@@ -44,8 +44,8 @@
 <h2>Quick Start</h2>
 
 <h3>1. Clone the Repository</h3>
-<pre>git clone https://github.com/Unknown-Blaze/easya-hackathon.git
-cd easya-hackathon/backend</pre>
+<pre>git clone https://github.com/Unknown-Blaze/SC4053-Project.git
+cd SC4053-Project/backend</pre>
 
 <h3>2. Backend Setup (FastAPI)</h3>
 
@@ -56,16 +56,10 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 </pre>
 
-<h4>Install Solidity Compiler</h4>
-<p>The backend compiles Solidity smart contracts on the fly. You'll need the `solc` compiler installed.</p>
+<h4>Hardhat Setup</h4>
 <pre>
-# On macOS
-brew install solidity
-
-# On Ubuntu
-sudo add-apt-repository ppa:ethereum/ethereum
-sudo apt-get update
-sudo apt-get install solc
+npm install
+npx hardhat compile
 </pre>
 
 <h4>Set Up Environment Variables</h4>
@@ -76,7 +70,7 @@ NGO_PRIVATE_KEY="YOUR_NGO_WALLET_PRIVATE_KEY"
 </pre>
 
 <h4>Deploy the NFT Contract</h4>
-<p>You need to deploy the `NFT.sol` contract once. You can do this using tools like Remix, Hardhat, or a simple Python script. Once deployed, paste its address into `routers/nft.py` at the `NFT_CONTRACT_ADDRESS` variable.</p>
+<p>You need to deploy the <code>NFT.sol</code> contract once using the <code>backend\deploy_contract.py</code> script. Once deployed, paste its address into <code>.env</code> file at the <code>NFT_CONTRACT_ADDRESS</code> variable.</p>
 
 <h4>Run the API</h4>
 <pre>uvicorn main:app --reload</pre>
@@ -90,40 +84,46 @@ npm run dev
 </pre>
 <p>Frontend runs on: <code>http://localhost:5173</code></p>
 
-<h3>API Endpoints</h3>
-<table>
-  <thead>
-    <tr>
-      <th>Endpoint</th>
-      <th>Method</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>/wallet/create</code></td>
-      <td><strong>POST</strong></td>
-      <td>Create a new Ethereum wallet.</td>
-    </tr>
-    <tr>
-      <td><code>/projects/create-project</code></td>
-      <td><strong>POST</strong></td>
-      <td>Create a new charity project and deploy MultiMilestoneEscrow contract.</td>
-    </tr>
-    <tr>
-      <td><code>/nft/mint</code></td>
-      <td><strong>POST</strong></td>
-      <td>Mint an NFT to a recipient's address.</td>
-    </tr>
-    <tr>
-      <td><code>/nft/tokens</code></td>
-      <td><strong>GET</strong></td>
-      <td>Retrieve NFTs for a given account address.</td>
-    </tr>
-    <tr>
-      <td><code>/transaction/latest-transactions</code></td>
-      <td><strong>GET</strong></td>
-      <td>Get the latest transactions for a given address.</td>
-    </tr>
-  </tbody>
-</table>
+<h3>API Endpoints</h3> <table> <thead> <tr> <th>Endpoint</th> <th>Method</th> <th>Description</th> </tr> </thead> <tbody>
+<!-- Projects -->
+<tr>
+  <td><code>/projects/create-project</code></td>
+  <td><strong>POST</strong></td>
+  <td>Create a new project and deploy its smart contract.</td>
+</tr>
+<tr>
+  <td><code>/projects/all</code></td>
+  <td><strong>GET</strong></td>
+  <td>Fetch a list of all registered projects.</td>
+</tr>
+<tr>
+  <td><code>/projects/project/:contractAddress/details</code></td>
+  <td><strong>GET</strong></td>
+  <td>Fetch project details using its contract address.</td>
+</tr>
+<tr>
+  <td><code>/projects/project/:contractAddress/mint-certificate</code></td>
+  <td><strong>POST</strong></td>
+  <td>Mint a donation certificate (NFT) for a specific project.</td>
+</tr>
+<tr>
+  <td><code>/projects/project/:contractAddress/verify-milestone/:milestoneIndex</code></td>
+  <td><strong>PATCH</strong></td>
+  <td>Verify a milestone for the given project and milestone index.</td>
+</tr>
+
+<!-- NFT -->
+<tr>
+  <td><code>/nft/gallery/:walletAddress</code></td>
+  <td><strong>GET</strong></td>
+  <td>Retrieve all NFTs owned by a given wallet address.</td>
+</tr>
+
+<!-- Transactions -->
+<tr>
+  <td><code>/transaction/latest-transactions?address=:address</code></td>
+  <td><strong>GET</strong></td>
+  <td>Fetch the latest blockchain transactions performed by a specific address.</td>
+</tr>
+
+</tbody> </table>

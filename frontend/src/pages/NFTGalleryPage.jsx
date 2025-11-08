@@ -15,59 +15,37 @@ const NFTGalleryPage = () => {
 
   useEffect(() => {
     if (currentUserProfile?.walletAddress) {
-      fetchNFTGallery();
-      fetchDonorStats();
+      fetchGalleryData();
     }
-  }, [currentUserProfile]);
+  }, [currentUserProfile?.walletAddress]);
 
-  const fetchNFTGallery = async () => {
+  const fetchGalleryData = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        API_ENDPOINTS.nftGallery(currentUserProfile.walletAddress)
-      );
+
+      // Single API call that returns both gallery and stats
+      const response = await fetch(API_ENDPOINTS.nftGallery(currentUserProfile.walletAddress));
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ detail: 'Unknown error' }));
         throw new Error(errorData.detail || `HTTP error! status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       
       if (data.success) {
         setCertificates(data.certificates || []);
+        setStats(data.stats || null);
       } else {
         setError(data.message || 'Failed to load NFT gallery');
       }
-      setLoading(false);
+
     } catch (err) {
       console.error('Error fetching NFT gallery:', err);
       setError(err.message || 'Failed to load NFT gallery');
+    } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchDonorStats = async () => {
-    try {
-      const response = await fetch(
-        API_ENDPOINTS.nftStats(currentUserProfile.walletAddress)
-      );
-      
-      if (!response.ok) {
-        // Don't set error for stats, just log it
-        console.error('Error fetching donor stats:', response.status);
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        setStats(data.stats);
-      }
-    } catch (err) {
-      console.error('Error fetching donor stats:', err);
-      // Don't set error for stats, just log it
     }
   };
 
