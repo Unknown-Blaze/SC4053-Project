@@ -1,6 +1,6 @@
 // src/pages/ProjectDisplayPage.jsx
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FiDollarSign, FiCheckCircle, FiClock, FiLoader, FiArrowRightCircle, FiAlertCircle, FiFileText } from 'react-icons/fi';
 import classes from '../styles/ProjectDisplayPage.module.css';
@@ -32,10 +32,13 @@ const ProjectDisplayPage = () => {
   const [milestonesError, setMilestonesError] = useState(null);
   const [contractBalance, setContractBalance] = useState('0');
   const [totalDonations, setTotalDonations] = useState('0');
+  const [isLoadingContract, setIsLoadingContract] = useState(true);
   const [displayBalance, setDisplayBalance] = useState('0');
   const [isAnimating, setIsAnimating] = useState(false);
   const [contractDetails, setContractDetails] = useState(null);
   const [verifyingMilestone, setVerifyingMilestone] = useState(null);
+  const fetchedProjectIdRef = useRef(null);
+  const fetchedContractAddressRef = useRef(null);
 
   // Slot machine animation effect
   const animateBalance = (targetValue) => {
@@ -65,6 +68,12 @@ const ProjectDisplayPage = () => {
 
   // Fetch initial project details from backend API (with IPFS support)
   useEffect(() => {
+    if (fetchedProjectIdRef.current === projectId) {
+      return;
+    }
+
+    fetchedProjectIdRef.current = projectId;
+
     const fetchProject = async () => {
       if (!projectId) {
         setProjectError("No project ID provided.");
@@ -136,6 +145,7 @@ const ProjectDisplayPage = () => {
 
     try {
       setIsLoadingMilestones(true);
+      setIsLoadingContract(true);
       setMilestonesError(null);
       
       // Fetch contract details from backend
@@ -170,47 +180,48 @@ const ProjectDisplayPage = () => {
             const milestoneAmount = parseFloat(milestone.amount_eth);
             cumulativeTarget += milestoneAmount;
             const currentBalance = parseFloat(balanceEth);
-            
-            // Determine status based on contract state and funding
+
             let status = "Pending";
             let canVerify = false;
-            
+
             if (milestone.is_verified) {
               status = "Verified & Released";
             } else {
-              // Find first unverified milestone
               if (firstUnverifiedIndex === -1) {
                 firstUnverifiedIndex = index;
               }
-              
-              // Check if this is the first unverified milestone and has enough funding
-              if (index === firstUnverifiedIndex && currentBalance >= cumulativeTarget) {
-                status = "Funded - Ready for Verification";
-                canVerify = true;
+
+              if (index === firstUnverifiedIndex) {
+                if (currentBalance >= milestoneAmount) {
+                  status = "Funded - Ready for Verification";
+                  canVerify = true;
+                } else if (milestone.is_completed) {
+                  status = "Completed - Pending Funding";
+                } else if (currentBalance > 0) {
+                  const fundingProgress = Math.min((currentBalance / milestoneAmount) * 100, 100);
+                  status = fundingProgress > 0 ? "Partially Funded" : "Pending";
+                }
               } else if (milestone.is_completed) {
                 status = "Completed - Pending Verification";
-              } else if (currentBalance >= cumulativeTarget) {
-                // Has enough funds but not the first unverified milestone
+              } else if (milestoneAmount > 0 && currentBalance >= milestoneAmount) {
                 status = "Funded - Waiting for Previous Milestone";
-              } else if (currentBalance > 0) {
-                const fundingProgress = Math.min((currentBalance / cumulativeTarget) * 100, 100);
-                if (fundingProgress > 0) {
-                  status = "Partially Funded";
-                }
+              } else if (milestoneAmount > 0 && currentBalance > 0) {
+                const fundingProgress = Math.min((currentBalance / milestoneAmount) * 100, 100);
+                status = fundingProgress > 0 ? "Partially Funded" : "Pending";
               }
             }
-            
+
             return {
               ...milestone,
               id: milestone.name || `milestone-${index}`,
               index: milestone.index,
-              status: status,
-              cumulativeTarget: cumulativeTarget,
+              status,
+              cumulativeTarget,
               individualAmount: milestoneAmount,
               is_completed: milestone.is_completed,
               is_verified: milestone.is_verified,
               verification_hash: milestone.verification_hash,
-              canVerify: canVerify // Flag to show verify button
+              canVerify
             };
           });
           setMilestones(processedMilestones);
@@ -221,14 +232,22 @@ const ProjectDisplayPage = () => {
       setMilestonesError('Failed to load contract details');
     } finally {
       setIsLoadingMilestones(false);
+      setIsLoadingContract(false);
     }
   }, []);
 
   // Fetch contract details when project data is loaded
   useEffect(() => {
-    if (projectData?.contract_address) {
-      fetchContractDetails(projectData.contract_address);
+    const contractAddress = projectData?.contract_address;
+    if (!contractAddress) return;
+
+    const normalizedAddress = contractAddress.toLowerCase();
+    if (fetchedContractAddressRef.current === normalizedAddress) {
+      return;
     }
+
+    fetchedContractAddressRef.current = normalizedAddress;
+    fetchContractDetails(contractAddress);
   }, [projectData, fetchContractDetails]);
 
   const fetchTransactions = useCallback(async (isInitialFetch = false) => {
@@ -352,6 +371,7 @@ const ProjectDisplayPage = () => {
       console.log('Milestone verified, funds released:', lastReceipt);
       
       // Refresh contract details
+      fetchedContractAddressRef.current = null;
       await fetchContractDetails(contractAddress);
       
     } catch (error) {
@@ -401,26 +421,34 @@ const ProjectDisplayPage = () => {
           marginTop: '1.5rem',
           fontFamily: "'Raleway', sans-serif"
         }}>
-          <div style={{ 
-            fontSize: '2.2rem', 
-            fontWeight: '700', 
-            marginBottom: '0.5rem',
-            color: '#1f2937',
-            transition: 'all 0.1s ease',
-            transform: isAnimating ? 'scale(1.05)' : 'scale(1)',
-            textShadow: isAnimating ? '0 0 10px rgba(59, 130, 246, 0.3)' : 'none'
-          }}>
-            {parseFloat(displayBalance).toFixed(6)} ETH
+          <div style={{ minHeight: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            {isLoadingContract ? (
+              <FiLoader className={classes.spinner} style={{ fontSize: '1.6rem', color: '#3b82f6' }} />
+            ) : (
+              <>
+                <div style={{ 
+                  fontSize: '2.2rem', 
+                  fontWeight: '700', 
+                  marginBottom: '0.5rem',
+                  color: '#1f2937',
+                  transition: 'all 0.1s ease',
+                  transform: isAnimating ? 'scale(1.05)' : 'scale(1)',
+                  textShadow: isAnimating ? '0 0 10px rgba(59, 130, 246, 0.3)' : 'none'
+                }}>
+                  {parseFloat(displayBalance).toFixed(6)} ETH
+                </div>
+                <div style={{ 
+                  fontSize: '1rem', 
+                  color: '#6b7280',
+                  fontWeight: '500',
+                  marginBottom: '0.5rem'
+                }}>
+                  {parseFloat(totalDonations) === 0 ? 'No donations received yet' : 'Total funding received'}
+                </div>
+              </>
+            )}
           </div>
-          <div style={{ 
-            fontSize: '1rem', 
-            color: '#6b7280',
-            fontWeight: '500',
-            marginBottom: '0.5rem'
-          }}>
-            {parseFloat(totalDonations) === 0 ? 'No donations received yet' : 'Total funding received'}
-          </div>
-          {projectData?.contract_address && (
+          {!isLoadingContract && projectData?.contract_address && (
             <div style={{ 
               fontSize: '0.85rem', 
               color: '#9ca3af',
@@ -458,8 +486,6 @@ const ProjectDisplayPage = () => {
           <div className={classes.panelHeader}>
             <h2>Project Milestones</h2>
           </div>
-          {/* isLoadingMilestones might still be useful if initial processing takes time, but not for network loading */}
-          {isLoadingMilestones && milestones.length === 0 && <FiLoader className={classes.spinner} />}
           {/* milestonesError would now relate to issues processing Firestore data, not fetching from a status API */}
           {milestonesError && <p className={classes.errorMessage}><FiAlertCircle /> {milestonesError}</p>}
 
