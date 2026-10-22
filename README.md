@@ -1,5 +1,16 @@
 # nGoDonate: Blockchain-Based Transparent Charity Platform
 
+Ethereum charity platform with milestone-based escrow, ERC-721 donation certificates and IPFS metadata, built for NTU SC4053; nGoDonate won Best Developer Tooling at the EasyA x Ripple hackathon (hackathon build: [easya-hackathon](https://github.com/Unknown-Blaze/easya-hackathon)).
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity&logoColor=white)](https://soliditylang.org/)
+[![Ethereum](https://img.shields.io/badge/Ethereum-Sepolia-3C3C3D?style=flat-square&logo=ethereum&logoColor=white)](https://sepolia.etherscan.io/)
+[![Live demo](https://img.shields.io/badge/Live%20demo-sc--4053--bc--project.vercel.app-000000?style=flat-square&logo=vercel&logoColor=white)](https://sc-4053-bc-project.vercel.app/)
+[![Winner](https://img.shields.io/badge/Winner%20%C2%B7%20EasyA%20x%20Ripple-Best%20Developer%20Tooling-FFB000?style=flat-square)](https://github.com/Unknown-Blaze/easya-hackathon)
+
+<img src="docs/screenshot.png" alt="nGoDonate landing page" width="100%">
+
 **SC4053 Blockchain Technology - Course Project**  
 **Nanyang Technological University**
 
