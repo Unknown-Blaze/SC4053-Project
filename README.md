@@ -7,9 +7,40 @@ Ethereum charity platform with milestone-based escrow, ERC-721 donation certific
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.20-363636?style=flat-square&logo=solidity&logoColor=white)](https://soliditylang.org/)
 [![Ethereum](https://img.shields.io/badge/Ethereum-Sepolia-3C3C3D?style=flat-square&logo=ethereum&logoColor=white)](https://sepolia.etherscan.io/)
 [![Live demo](https://img.shields.io/badge/Live%20demo-sc--4053--bc--project.vercel.app-000000?style=flat-square&logo=vercel&logoColor=white)](https://sc-4053-bc-project.vercel.app/)
+![NTU SC4053](https://img.shields.io/badge/NTU-SC4053%20Blockchain-1F3A93?style=flat-square)
 [![Winner](https://img.shields.io/badge/Winner%20%C2%B7%20EasyA%20x%20Ripple-Best%20Developer%20Tooling-FFB000?style=flat-square)](https://github.com/Unknown-Blaze/easya-hackathon)
 
 <img src="docs/screenshot.png" alt="nGoDonate landing page" width="100%">
+
+## What it does
+
+NGOs publish a charity project as a set of funding milestones. Each project gets its own `MultiMilestoneEscrow` contract on Ethereum Sepolia: donations are locked in escrow and released to the NGO only when a milestone is completed and verified, with the proof document stored on IPFS. Every donor receives an ERC-721 certificate whose metadata lives on IPFS, and a session-wallet option lets donors give without managing MetaMask.
+
+## Tech
+
+- **Contracts:** Solidity 0.8.20, OpenZeppelin, Hardhat (`backend/contracts/`)
+- **Backend:** FastAPI, Web3.py, Firebase Admin, Pinata IPFS (`backend/`)
+- **Frontend:** React 19, Vite, Chakra UI, ethers.js, Firebase Auth (`frontend/`)
+- **Deploy:** Vercel (frontend), Railway (backend), Docker Compose for local runs
+
+## Run
+
+Both halves read a `.env` file; the variables are listed under [Setup and Installation](#setup-and-installation) below.
+
+```bash
+# backend: API on http://localhost:8000 (Swagger at /docs)
+cd backend
+pip install -r requirements.txt
+npm install && npm run compile      # Hardhat compiles the Solidity contracts
+uvicorn main:app --reload
+
+# frontend: http://localhost:5173
+cd frontend
+npm install
+npm run dev
+```
+
+Or run both with `docker compose up --build` (needs `backend/.env`, `backend/serviceAccountKey.json` and `frontend/.env`).
 
 **SC4053 Blockchain Technology - Course Project**  
 **Nanyang Technological University**
